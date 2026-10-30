@@ -1,0 +1,62 @@
+# ─────────────────────────────────────────────────────────────
+#  aivillage configuration
+#  Copy this file to config.toml and edit what you like.
+# ─────────────────────────────────────────────────────────────
+
+[general]
+language   = "en"        # en | de  (also switchable in-game with F2)
+window_width  = 1440
+window_height = 810
+zoom       = 3           # integer world scale; bigger = closer
+seed       = 1234
+
+[reality]
+# live  -> the village clock IS your clock
+# fast  -> starts at your real time but runs ahead
+time_mode        = "live"
+latitude         = "auto"   # "auto" (IP based) or a number like 54.09
+longitude        = "auto"
+weather_enabled  = true
+weather_refresh_s = 900
+offline_weather  = "last_known"   # last_known | seasonal_sim
+night_on_launch  = "live"         # live | skip_to_dawn
+
+[llm]
+# auto | ollama | openai | anthropic | openai_compatible | none
+provider     = "auto"
+model        = "llama3.2"
+base_url     = ""            # e.g. http://localhost:11434 or your LM Studio url
+api_key_env  = "OPENAI_API_KEY"
+temperature  = 0.9
+max_tokens   = 300
+timeout_s    = 60
+ambient_dialogue = true
+
+[voice]
+enabled       = true
+speak_ambient = false      # villagers only speak when YOU talk to them or news arrives
+volume        = 0.85
+rate_scale    = 1.0
+
+[social]
+ambient_budget_s = 20      # minimum seconds between auto conversations
+work_chatter     = false   # tiny one-liners during work hours
+
+[news]
+enabled  = true
+poll_minutes = 40
+max_dispatches_per_day = 2
+tone     = "neutral"       # neutral | wholesome | strange_only
+# category weights used when choosing which story reaches the village
+[news.weights]
+world   = 0.40
+odd     = 0.15
+science = 0.15
+tech    = 0.10
+sport   = 0.10
+local   = 0.10
+
+[visitors]
+enabled = true
+arrivals_per_day = 3
+stay_minutes = 45

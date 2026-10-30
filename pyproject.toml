@@ -1,0 +1,20 @@
+[project]
+name = "aivillage"
+version = "0.1.0"
+description = "A pixel-art village of AI agents that lives on your real clock, weather and news."
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "pygame-ce>=2.5",
+    "numpy>=2.0",
+    "requests>=2.31",
+    "feedparser>=6.0",
+    "python-dotenv>=1.0",
+    "pyttsx3>=2.90",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
