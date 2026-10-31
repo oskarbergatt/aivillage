@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from .app_shared import (
+    math,
     pygame,
     time,
     traceback,
@@ -16,6 +17,16 @@ class VillageLoopMixin:
         if self._dragging:
             self._dragging = False
             return
+        wx, wy = self.camera.screen_to_world(*e.pos)
+        doors = [(math.hypot(point[0] - wx, point[1] - wy), key)
+                 for key, point in self.world.points.items() if key.startswith("home_")]
+        if doors:
+            distance, key = min(doors)
+            if distance <= 14:
+                self.inside_house = key[5:]
+                self.selected = None
+                self.follow_selected = False
+                return
         picked = self._pick(e.pos)
         self.selected = picked
         self.follow_selected = picked is not None

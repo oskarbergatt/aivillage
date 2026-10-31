@@ -193,7 +193,9 @@ class VillageControlsMixin:
             return
 
         if e.key == pygame.K_ESCAPE:
-            if self.selected is not None:
+            if self.inside_house:
+                self.inside_house = ""
+            elif self.selected is not None:
                 self.selected = None
                 self.follow_selected = False
             elif not self.setup_dismissed and not self.llm.available:
@@ -224,6 +226,12 @@ class VillageControlsMixin:
             self.clock.set_speed(speeds[e.key])
         elif e.key == pygame.K_l:
             self.clock.return_to_live()
+        elif e.key == pygame.K_u and self.update_url:
+            import webbrowser
+            try:
+                webbrowser.open(self.update_url)
+            except Exception:
+                self.toast("Could not open the release page")
         elif e.key == pygame.K_n:
             self.clock.sleep_until_dawn()
             self.toast(self.i18n.t("ui.sleep_until_dawn"))

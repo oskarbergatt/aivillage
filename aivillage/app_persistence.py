@@ -217,6 +217,13 @@ class VillagePersistenceMixin:
             self._maybe_social(frame_dt)
             self._maybe_self_direction(frame_dt)
             self._tick_script()
+        if self._update_result:
+            version, url, current = self._update_result
+            self._update_result = None
+            from .update_check import newer_version
+            if newer_version(version, current):
+                self.update_version, self.update_url = version, url
+                self.toast(f"Version {version} available · press U for release", 12.0)
         self._check_day()
         for toast in list(self.toasts):
             toast[1] -= frame_dt
@@ -233,8 +240,12 @@ class VillagePersistenceMixin:
             self.autosave()
 
     def _draw(self, frame_dt: float) -> None:
-        self.renderer.draw(self.screen, self.clock, self.weather, self.agents,
-                           self.visitors, self.selected, frame_dt)
+        if self.inside_house:
+            self.renderer.draw_interior(self.screen, self.world.buildings.get(self.inside_house),
+                                        self.agents, self.i18n)
+        else:
+            self.renderer.draw(self.screen, self.clock, self.weather, self.agents,
+                               self.visitors, self.selected, frame_dt)
         if not self.photo_mode:
             self.ui.draw(self.screen, self, frame_dt)
         else:

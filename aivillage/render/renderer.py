@@ -12,10 +12,11 @@ from ..assets.font import render
 from ..assets.palette import P, mix
 from .bubbles import BubbleRenderer
 from .camera import Camera
+from .interior import InteriorRendererMixin
 
 TILE = 16
 
-class Renderer(BubbleRenderer):
+class Renderer(InteriorRendererMixin, BubbleRenderer):
     def __init__(self, world, camera: Camera, i18n):
         self.world = world
         self.camera = camera

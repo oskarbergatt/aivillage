@@ -110,6 +110,10 @@ class VillageApp(ChatMixin, AlertCourierMixin, PhotoExportMixin, VillageServices
         self.ui = UI(self.i18n)
 
         self.selected = None
+        self.inside_house = ""
+        self.update_url = ""
+        self.update_version = ""
+        self._update_result = None
         self.follow_selected = False
         self.chat = ChatState()
         self.show_chronicle = False
@@ -175,6 +179,10 @@ class VillageApp(ChatMixin, AlertCourierMixin, PhotoExportMixin, VillageServices
         self._shot_at = float(os.environ.get("AIVILLAGE_SHOT_AT", "2.0") or 2.0)
         self._shot_done = False
         self._started_at = time.time()
+        if getattr(__import__("sys"), "frozen", False):
+            from .update_check import check_latest
+            from . import __version__
+            check_latest(lambda version, url: setattr(self, "_update_result", (version, url, __version__)))
 
         self._plan_visitors()
         if not new_game:
