@@ -107,7 +107,7 @@ def test_builder_refuses_to_replace_installer(tmp_path, monkeypatch):
     app.mkdir()
     output = tmp_path / "output"
     output.mkdir()
-    target = output / "aivillage-0.4.0-windows-amd64.exe"
+    target = output / f"aivillage-{build_installer.project_version()}-windows-amd64.exe"
     target.write_bytes(b"existing")
     with pytest.raises(FileExistsError):
         build_installer.build_installer(app, output)
