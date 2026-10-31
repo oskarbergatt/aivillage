@@ -12,8 +12,9 @@ from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
+from .runtime_paths import data_root
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = data_root(Path(__file__).resolve().parent.parent)
 CONFIG_PATH = ROOT / "config.toml"
 EXAMPLE_PATH = ROOT / "config.example.toml"
 DATA_DIR = ROOT / "data"
@@ -45,13 +46,18 @@ DEFAULTS: dict[str, Any] = {
         "provider": "auto",
         "model": "llama3.2",
         "base_url": "",
-        "api_key_env": "OPENAI_API_KEY",
+        "api_key_env": "",
         "temperature": 0.9,
         "max_tokens": 300,
+        "cache_entries": 256,
         "timeout_s": 60,
         "ambient_dialogue": True,
+        "parallel_ambient": True,
+        "ambient_model": "",
+        "ambient_reasoning_effort": "low",
         "self_directed": True,
         "self_interval_s": 180,
+        "self_failure_backoff_max_s": 1800,
         "cli_model": "",
         "cli_timeout_s": 120,
         "claude_command": "claude",
@@ -60,12 +66,14 @@ DEFAULTS: dict[str, Any] = {
     },
     "voice": {
         "enabled": True,
-        "speak_ambient": False,
+        "speak_ambient": True,
         "volume": 0.85,
         "rate_scale": 1.0,
     },
     "social": {
-        "ambient_budget_s": 20,
+        "ambient_budget_s": 45,
+        "failure_backoff_s": 120,
+        "failure_backoff_max_s": 900,
         "work_chatter": False,
         "group_chats": True,
         "group_chance": 0.35,
@@ -120,6 +128,21 @@ class Config:
             with open(path, "rb") as fh:
                 raw = tomllib.load(fh)
         self._data = _deep_merge(DEFAULTS, raw)
+        from .setup import PROVIDERS, read_setup, valid_model_id, valid_gateway
+        setup = read_setup(path)
+        provider = setup.get("provider")
+        if provider in PROVIDERS:
+            self.set("llm.provider", provider)
+        gateway = setup.get("gateway")
+        if provider == "openai_compatible" and isinstance(gateway, dict):
+            url, model, key_env = (gateway.get(k) for k in ("url", "model", "key_env"))
+            if all(isinstance(v, str) for v in (url, model, key_env)) and valid_gateway(url, model, key_env):
+                self.set("llm.base_url", url)
+                self.set("llm.model", model)
+                self.set("llm.api_key_env", key_env)
+        ambient_model = setup.get("ambient_model")
+        if isinstance(ambient_model, str) and valid_model_id(ambient_model):
+            self.set("llm.ambient_model", ambient_model)
         for d in (DATA_DIR, SAVE_DIR):
             d.mkdir(parents=True, exist_ok=True)
 

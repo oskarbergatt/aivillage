@@ -26,8 +26,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--lang", choices=("en", "de"), default=None,
                    help="interface language for this run")
     p.add_argument("--provider", default=None,
-                   choices=("auto", "ollama", "openai", "anthropic",
-                            "openai_compatible", "mock", "none"),
+                    choices=("auto", "ollama", "openai", "anthropic",
+                             "openai_compatible", "claude_cli", "codex_cli",
+                             "subscription", "mock", "none"),
                    help="force a language-model provider")
     p.add_argument("--model", default=None, help="model name for the chosen provider")
     p.add_argument("--config", default=None, help="path to an alternative config.toml")

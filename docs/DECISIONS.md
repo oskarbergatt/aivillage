@@ -188,13 +188,12 @@ module.
 
 ## 17. Separate git repository in the project folder
 
-**Actual:** the home directory (`C:\Users\Oskar`) is itself a git repository with no commits. The
-project is initialised as its own repository instead of committing into the home repo.
+**Actual:** the project is initialised as its own repository instead of committing a home directory.
 
 **Why:** committing the whole home directory is unsafe and meaningless. A project-scoped repo keeps
 diffs reviewable and ignores `.venv/`, `data/`, `saves/`, `config.toml` and `.env`.
 
-**Cost:** the home repo sees the project as a nested repository; leave it untracked there.
+**Cost:** when nested in another repository, this project is seen as a separate repository.
 
 ## 18. Subscriptions are driven through the official CLIs, not as API keys
 

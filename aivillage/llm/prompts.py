@@ -122,6 +122,7 @@ def exchange_user(a: Persona, b: Persona, ctx: dict, topic: str = "") -> str:
         f"Character B: {b.name}, the {b.job}. {b.bio} Quirk: {b.quirk} "
         f"Mood: {ctx.get('mood_b', 'steady')}. Currently: {ctx.get('activity_b', 'idle')}.\n"
         f"They feel about each other: {ctx.get('relation', 'acquainted')}.\n"
+        f"Things they recently said: {'; '.join(ctx.get('social_history', [])[-4:]) or 'nothing yet'}.\n"
         f"Shared news on their minds: {topic or 'nothing in particular'}.\n"
         'Return JSON only: {"lines": [{"speaker": "a", "text": "..."}, '
         '{"speaker": "b", "text": "..."}]}'

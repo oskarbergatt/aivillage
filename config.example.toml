@@ -9,7 +9,7 @@ window_width  = 1440
 window_height = 810
 zoom       = 3           # integer world scale; bigger = closer
 seed       = 1234
-save_slot  = 1           # 1-5 (slot picker not yet wired into the HUD)
+save_slot  = 1           # reserved; choose a slot in the F3 settings panel
 photo_mode = false       # reserved: start with the UI hidden
 seasonal_palette = true  # tint grass/trees by the real season
 
@@ -30,11 +30,15 @@ night_on_launch  = "live"         # live | skip_to_dawn
 provider     = "auto"
 model        = "llama3.2"
 base_url     = ""            # e.g. http://localhost:11434 or your LM Studio url
-api_key_env  = "OPENAI_API_KEY"
+api_key_env  = ""            # optional environment variable name, never the key itself
 temperature  = 0.9
 max_tokens   = 300
+cache_entries = 256          # bounded in-memory exact-response cache; 0 disables
 timeout_s    = 60
 ambient_dialogue = true
+parallel_ambient = true       # separate worker for background conversations
+ambient_model = ""            # optional model ID just for background conversations
+ambient_reasoning_effort = "low" # Codex conversations only; "" uses Codex's default
 
 # Subscription connectors. These drive the official, already-logged-in CLIs
 # (`claude -p` / `codex exec`); consumer subscriptions are not plain API keys.
@@ -52,19 +56,22 @@ cli_timeout_s    = 120
 # Runs only with a real provider (never with mock). Press R in-game to ask now.
 self_directed   = true
 self_interval_s = 180
+self_failure_backoff_max_s = 1800 # cap automatic retries after provider errors
 
 [voice]
 enabled       = true
-speak_ambient = false      # villagers only speak when YOU talk to them or news arrives
+speak_ambient = true       # speak villagers' free-time conversations aloud
 volume        = 0.85
 rate_scale    = 1.0
 
 [social]
-ambient_budget_s = 20      # minimum seconds between auto conversations
+ambient_budget_s = 45      # minimum seconds between auto conversations
+failure_backoff_s = 120     # initial retry delay after failed ambient generation
+failure_backoff_max_s = 900 # maximum retry delay
 work_chatter     = false   # tiny one-liners during work hours
-group_chats      = true    # reserved: group prompt helpers exist, scheduler not wired
+group_chats      = true    # allow ambient group conversations
 group_chance     = 0.35
-threads          = true    # reserved: thread memory helpers exist, scheduler not wired
+threads          = true    # include saved player chat history in prompts
 
 [news]
 enabled  = true
@@ -74,7 +81,7 @@ tone     = "neutral"       # neutral | wholesome | strange_only
 mute_after_failures = 5    # stop hammering a dead feed
 backoff_base_s = 300
 backoff_max_s  = 21600
-alerts_enabled = true      # reserved: Bright Sky service exists, courier not wired
+alerts_enabled = true      # Bright Sky alert couriers; not an emergency warning system
 alert_poll_minutes = 20
 # category weights used when choosing which story reaches the village
 [news.weights]

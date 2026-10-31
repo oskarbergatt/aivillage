@@ -1,10 +1,16 @@
 .venv/
+.installer-venv/
 __pycache__/
 *.pyc
 config.toml
+aivillage-setup.json
 .env
 data/
 saves/
 .pytest_cache/
+dist/
+build/
+*.egg-info/
 *.png
 !assets/**/*.png
+!docs/village-preview.png

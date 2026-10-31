@@ -148,3 +148,37 @@ def test_cli_failure_is_loud(config, monkeypatch):
             client._call_cli(Job("chat", "system", "user prompt"))
     finally:
         client.stop()
+
+
+def test_cli_failure_with_stdout_is_not_treated_as_dialogue(config, monkeypatch):
+    import pytest
+    client = LLMClient(config)
+    client.provider = "codex_cli"
+    client.cli_path = "codex"
+    monkeypatch.setattr(client, "_run_cli", lambda *a: FakeProc(
+        stdout='{"type":"error","message":"subscription unavailable"}', code=1))
+    try:
+        with pytest.raises(RuntimeError, match="subscription unavailable"):
+            client._call_cli(Job("exchange", "system", "prompt"))
+    finally:
+        client.stop()
+
+
+def test_codex_low_effort_is_only_used_for_ambient_dialogue(config, monkeypatch):
+    client = LLMClient(config)
+    client.provider = "codex_cli"
+    client.cli_path = "codex"
+    commands = []
+    def fake(cmd, prompt, timeout):
+        commands.append(cmd)
+        Path(cmd[-2]).write_text('{"line":"ok"}', encoding="utf-8")
+        return FakeProc()
+    monkeypatch.setattr(client, "_run_cli", fake)
+    try:
+        client._call_cli(Job("exchange", "system", "prompt", model="fast-model"))
+        client._call_cli(Job("chat", "system", "prompt"))
+        assert 'model_reasoning_effort="low"' in commands[0]
+        assert "fast-model" in commands[0]
+        assert not any("model_reasoning_effort" in item for item in commands[1])
+    finally:
+        client.stop()
