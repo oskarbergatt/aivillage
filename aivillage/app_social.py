@@ -65,8 +65,13 @@ class VillageSocialMixin:
         recent = a.memory.recent(1, "news") or b.memory.recent(1, "news")
         if recent:
             topic = recent[-1]
-        history = [entry.text for entry in a.memory.entries
-                   if entry.kind == "social" and entry.dispatch_id == b.key][-4:]
+        history = ([f"{self.agent_by_key[line.speaker].name}: {line.text}"
+                    for line in a.memory.social_threads.get(b.key, [])[-8:]
+                    if line.speaker in self.agent_by_key]
+                   if self.config.get("social.threads", True) else [])
+        if not history and self.config.get("social.threads", True):
+            history = [entry.text for entry in a.memory.entries
+                       if entry.kind == "social" and entry.dispatch_id == b.key][-4:]
 
         def done(data: dict | None, error: str) -> None:
             if generation != self._social_generation:
@@ -176,8 +181,15 @@ class VillageSocialMixin:
                         agent.memory.adjust(other.key, 0.04)
             self.social_timer = min(8.0, max(1.0, float(self.config.get("social.ambient_budget_s", 45))))
 
+        context = self._prompt_ctx(None)
+        if self.config.get("social.threads", True):
+            context["social_history"] = [
+                f"{self.agent_by_key[line.speaker].name}: {line.text}"
+                for i, member in enumerate(members) for other in members[i + 1:]
+                for line in member.memory.social_threads.get(other.key, [])[-2:]
+                if line.speaker in self.agent_by_key][-8:]
         self.llm.submit("group", prompts.group_system(self.i18n.language),
-                        prompts.group_user([a.persona for a in members], self._prompt_ctx(None),
+                        prompts.group_user([a.persona for a in members], context,
                                            moods={a.key: a.needs.mood_word() for a in members}),
                         done, max_tokens=500, temperature=0.95)
 
@@ -206,6 +218,12 @@ class VillageSocialMixin:
             date = self.clock.date_text()
             agent.memory.add(memory, date, "social", other.key)
             other.memory.add(memory, date, "social", agent.key)
+        if self.config.get("social.threads", True):
+            members = self._conversation_members(agent)
+            for participant in members:
+                for peer in members:
+                    if participant is not peer:
+                        participant.memory.add_social_thread(peer.key, agent.key, text, self.clock.date_text())
 
     def _hold_social_speech(self, dt: float) -> None:
         """Keep active bubbles and scheduled speakers alive while SAPI reads."""

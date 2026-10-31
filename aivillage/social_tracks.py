@@ -3,6 +3,16 @@ from .voice.tts import VoiceService
 
 
 class SocialTracksMixin:
+    def _conversation_members(self, speaker):
+        members = [speaker]
+        current = speaker
+        while len(members) < 4:
+            current = self.agent_by_key.get(current.partner or "")
+            if current is None or current.state != "talk" or current in members:
+                break
+            members.append(current)
+        return members
+
     def _social_track_count(self):
         return int(bool(self.script) or self.voice.is_busy()) + len(self._social_tracks)
 

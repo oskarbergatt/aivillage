@@ -53,6 +53,7 @@ class MemoryBook:
         self.entries: list[Memory] = []
         self.affinity: dict[str, float] = {}
         self.thread: list[ThreadLine] = []
+        self.social_threads: dict[str, list[ThreadLine]] = {}
 
     def add(self, text: str, day: str = "", kind: str = "event",
             dispatch_id: str = "") -> None:
@@ -92,3 +93,14 @@ class MemoryBook:
 
     def thread_prompt(self, n: int = 8) -> list[str]:
         return [f"{line.speaker}: {line.text}" for line in self.thread[-n:]]
+
+    def add_social_thread(self, other_key: str, speaker: str, text: str, day: str = "") -> None:
+        text = " ".join(str(text or "").split())[:240]
+        if not other_key or not text:
+            return
+        lines = self.social_threads.setdefault(other_key, [])
+        lines.append(ThreadLine(speaker, text, day))
+        del lines[:-self.MAX_THREAD]
+
+    def social_prompt(self, other_key: str, n: int = 8) -> list[str]:
+        return [f"{line.speaker}: {line.text}" for line in self.social_threads.get(other_key, [])[-n:]]

@@ -122,7 +122,7 @@ def exchange_user(a: Persona, b: Persona, ctx: dict, topic: str = "") -> str:
         f"Character B: {b.name}, the {b.job}. {b.bio} Quirk: {b.quirk} "
         f"Mood: {ctx.get('mood_b', 'steady')}. Currently: {ctx.get('activity_b', 'idle')}.\n"
         f"They feel about each other: {ctx.get('relation', 'acquainted')}.\n"
-        f"Things they recently said: {'; '.join(ctx.get('social_history', [])[-4:]) or 'nothing yet'}.\n"
+        f"Things they recently said: {'; '.join(ctx.get('social_history', [])[-8:]) or 'nothing yet'}.\n"
         f"Shared news on their minds: {topic or 'nothing in particular'}.\n"
         'Return JSON only: {"lines": [{"speaker": "a", "text": "..."}, '
         '{"speaker": "b", "text": "..."}]}'
@@ -150,6 +150,7 @@ def group_user(members: list[Persona], ctx: dict, topic: str = "",
     return (
         f"{world_line(ctx)}\n"
         f"Gathered here: {names}.\n{card}\n"
+        f"Shared conversation history: {'; '.join(ctx.get('social_history', [])[-8:]) or 'none yet'}.\n"
         f"What is on their minds: {topic or 'the day, the weather, the village'}.\n"
         'Return JSON only: {"lines": [{"speaker": "exact name", "text": "..."}]}'
     )

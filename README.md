@@ -161,6 +161,8 @@ cannot be loaded into the current village.
 Automatic dialogue backs off after provider errors; player-initiated chat and self-direction are
 not subject to that retry delay. `llm.cache_entries` limits the in-memory cache for exact matching
 requests (set it to `0` to disable caching). See `config.example.toml` for retry settings.
+With conversation threads enabled in F3, delivered lines are saved per pair of villagers and recent
+lines are included in future pair and group prompts. Each thread retains at most 24 lines.
 Up to three independent villager conversations can overlap, with sequential turns within each
 conversation and separate Windows SAPI playback. Two background model requests may run at once,
 which can increase provider usage or local model load. Under

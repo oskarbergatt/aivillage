@@ -35,6 +35,9 @@ class VillagePersistenceMixin:
                                for m in a.memory.entries[-20:]],
                     "thread": [{"speaker": line.speaker, "text": line.text, "day": line.day}
                                for line in a.memory.thread_recent(a.memory.MAX_THREAD)],
+                    "social_threads": {key: [{"speaker": line.speaker, "text": line.text, "day": line.day}
+                                             for line in lines[-a.memory.MAX_THREAD:]]
+                                       for key, lines in a.memory.social_threads.items()},
                     "x": a.x, "y": a.y,
                     "persona": {
                         "job": a.persona.job,
@@ -128,6 +131,15 @@ class VillagePersistenceMixin:
                 for line in adata.get("thread", [])[-agent.memory.MAX_THREAD:]:
                     if isinstance(line, dict) and line.get("speaker") in ("you", "them"):
                         agent.memory.add_thread(line["speaker"], line.get("text", ""), line.get("day", ""))
+                agent.memory.social_threads = {}
+                social_threads = adata.get("social_threads", {})
+                if isinstance(social_threads, dict):
+                    for other_key, lines in social_threads.items():
+                        if other_key not in self.agent_by_key or other_key == key or not isinstance(lines, list):
+                            continue
+                        for line in lines[-agent.memory.MAX_THREAD:]:
+                            if isinstance(line, dict) and line.get("speaker") in self.agent_by_key:
+                                agent.memory.add_social_thread(other_key, line["speaker"], line.get("text", ""), line.get("day", ""))
                 if "x" in adata and "y" in adata:
                     agent.x, agent.y = float(adata["x"]), float(adata["y"])
                     agent.state = "idle"
