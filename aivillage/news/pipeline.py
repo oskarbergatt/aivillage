@@ -19,6 +19,7 @@ import requests
 
 from ..agents.visitor import Dispatch
 from ..llm import prompts
+from .alerts import Alert
 from .filters import clean, clip, guess_tone, is_distress
 from .sources import SOURCES, Source
 from .store import NewsItem, NewsStore, item_id
@@ -79,6 +80,17 @@ class NewsService:
         self.last_error = ""
         self.added_total = 0
 
+        # Per-source health.  A feed that fails repeatedly is backed off
+        # exponentially and then muted; a manual wake or the settings panel
+        # can bring it back.
+        self.failures: dict[str, int] = {}
+        self.muted: set[str] = set()
+        self.next_try: dict[str, float] = {}
+        self.mute_after = max(2, int(config.get("news.mute_after_failures", 5)))
+        self.backoff_base = max(60, int(config.get("news.backoff_base_s", 300)))
+        self.backoff_max = max(self.backoff_base,
+                               int(config.get("news.backoff_max_s", 21600)))
+
         self._pending = False
         self._pending_item: NewsItem | None = None
         self._last_source = ""
@@ -113,7 +125,8 @@ class NewsService:
         ok = 0
         errors = 0
         try:
-            futures = [self._pool.submit(_fetch_feed, src) for src in SOURCES]
+            sources = [src for src in SOURCES if self._source_active(src.name)]
+            futures = [self._pool.submit(_fetch_feed, src) for src in sources]
             for future in futures:
                 try:
                     src, items, err = future.result(timeout=25)
@@ -123,8 +136,10 @@ class NewsService:
                     continue
                 if err:
                     errors += 1
+                    self._record_source(src.name, False)
                     continue
                 ok += 1
+                self._record_source(src.name, True)
                 added += self.store.save_items(items)
             self.feeds_ok = ok
             self.last_fetch = time.time()
@@ -137,6 +152,47 @@ class NewsService:
         finally:
             self.fetching = False
         return added
+
+    # -- feed health -----------------------------------------------------
+    def _source_active(self, name: str) -> bool:
+        if name in self.muted:
+            return False
+        return time.time() >= self.next_try.get(name, 0.0)
+
+    def _record_source(self, name: str, success: bool) -> None:
+        if success:
+            self.failures.pop(name, None)
+            self.next_try.pop(name, None)
+            return
+        count = self.failures.get(name, 0) + 1
+        self.failures[name] = count
+        if count >= self.mute_after:
+            self.muted.add(name)
+            self.next_try.pop(name, None)
+            return
+        delay = min(self.backoff_max, self.backoff_base * (2 ** (count - 1)))
+        self.next_try[name] = time.time() + delay
+
+    def feed_health(self) -> list[dict]:
+        now = time.time()
+        out = []
+        for src in SOURCES:
+            out.append({
+                "name": src.name,
+                "lang": src.lang,
+                "category": src.category,
+                "failures": self.failures.get(src.name, 0),
+                "muted": src.name in self.muted,
+                "retry_in": max(0, int(self.next_try.get(src.name, now) - now)),
+            })
+        return out
+
+    def retry_feeds(self) -> None:
+        """Clear all backoff/mute state and fetch soon."""
+        self.muted.clear()
+        self.failures.clear()
+        self.next_try.clear()
+        self.wake(force=True)
 
     # -- choosing & retelling --------------------------------------------
     def _weights(self, lang: str) -> dict[str, float]:
@@ -245,6 +301,41 @@ class NewsService:
         )
         return True
 
+    def request_alert(self, alert: Alert, lang: str,
+                      callback: DispatchCallback) -> bool:
+        """Retell an official DWD warning as a courier bulletin (LLM only)."""
+        if not self.llm.available:
+            return False
+
+        def done(data: dict | None, error: str) -> None:
+            if error or not data:
+                callback(None)
+                return
+            headline = str(data.get("headline", "")).strip()
+            if not headline:
+                callback(None)
+                return
+            callback(Dispatch(
+                headline=headline,
+                tone=str(data.get("tone", "bad") or "bad"),
+                topic=str(data.get("topic", "weather") or "weather"),
+                original=alert.headline,
+                source="DWD · Bright Sky",
+                url=alert.url,
+                day=datetime.now().strftime("%d %b"),
+            ))
+
+        self.llm.submit(
+            "alert",
+            prompts.alert_system(lang),
+            prompts.alert_user(alert.headline, alert.description, alert.instruction,
+                               alert.severity, lang),
+            done,
+            max_tokens=240,
+            temperature=0.75,
+        )
+        return True
+
     def _make_dispatch(self, item: NewsItem, headline: str, tone: str,
                        topic: str) -> Dispatch:
         return Dispatch(
@@ -284,9 +375,14 @@ class NewsService:
             "fetching": self.fetching,
             "error": self.last_error,
             "pending": self._pending,
+            "muted": len(self.muted),
+            "failing": len(self.failures),
         }
 
-    def wake(self) -> None:
+    def wake(self, force: bool = False) -> None:
         """Force a refresh soon (called when the player asks for a traveller)."""
+        if force:
+            self.muted.clear()
+            self.next_try.clear()
         if not self.fetching:
             threading.Thread(target=self.fetch_once, daemon=True).start()

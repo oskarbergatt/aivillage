@@ -210,7 +210,8 @@ def test_save_and_load_roundtrip(app, tmp_path):
 
 
 def test_new_game_snapshot_has_all_villagers(app):
+    from aivillage.agents.roster import ROSTER
     data = app.snapshot()
     assert set(data["agents"]) == {a.key for a in app.agents}
-    assert len(data["agents"]) == 8
+    assert len(data["agents"]) == len(ROSTER)
     assert "plots" in data and data["plots"]

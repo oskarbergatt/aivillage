@@ -195,3 +195,56 @@ project is initialised as its own repository instead of committing into the home
 diffs reviewable and ignores `.venv/`, `data/`, `saves/`, `config.toml` and `.env`.
 
 **Cost:** the home repo sees the project as a nested repository; leave it untracked there.
+
+## 18. Subscriptions are driven through the official CLIs, not as API keys
+
+**Planned:** "an OpenAI / Anthropic subscription connector".
+**Actual:** consumer ChatGPT Plus/Pro and Claude Pro/Max subscriptions are not callable as ordinary
+API keys, and scraping a browser session would be fragile and against the services' terms. The
+`subscription` connectors instead spawn the official, already-logged-in CLIs (`claude -p` and
+`codex exec`), pass the system prompt and user prompt, and parse their output.
+
+**Why:** this is the only supported way to reuse a consumer subscription. It also avoids storing
+OAuth tokens or asking for passwords.
+
+**Cost:** each villager line is a separate process and can take seconds; normal subscription rate
+limits apply. A failed login or billing check surfaces as an error bubble/toast rather than silent
+dialogue. On Windows, npm's `.cmd` shims are wrapped in `COMSPEC /c`; the prompt goes over stdin
+because Claude's CLI rejects an empty `--tools` flag followed by an argument.
+
+## 19. Children are a job role, not adult villagers with a smaller sprite
+
+**Actual:** a `child` entry in the job registry owns the school/play schedule. Kids have a `parent`
+key, `age`, smaller render scale, no yield, and a `dream_job` field that self-direction can change.
+They cannot take an adult trade or produce resources.
+
+**Why:** treating children as ordinary workers made them compete for adult jobs and broke the
+economy tests. A separate role keeps the timetable explicit and lets the inspector show "dreams of
+builder" without pretending the child is employed.
+
+**Cost:** children are less economically useful by design; the village needs enough adults to keep
+wood/stone/food/coin moving.
+
+## 20. Self-authored identity is validated before it touches a villager
+
+**Actual:** the `self` LLM job may return `job`, `dream_job`, `ambition`, `bio`, `quirk`, `hat` and
+`outfit`. `Agent.apply_self()` checks the job registry, hat allow-list, outfit range and text
+lengths; unknown values are ignored. The same validation runs when restoring a save. Autonomous
+self-direction is disabled for the `mock` provider and can be turned off with `llm.self_directed`.
+
+**Why:** a model can hallucinate a trade ("wizard"), an invalid sprite index or a 2,000-character
+biography. Validation keeps the world consistent and the mock provider deterministic for tests.
+
+**Cost:** the model cannot invent genuinely new trades or clothing; it chooses from the registry and
+the procedural sprite options. Player-triggered self-direction still needs a live provider.
+
+## 21. Tests pin an ordinary Thursday
+
+**Actual:** the shared `app` fixture sets the sim clock to `2026-10-29 10:00` and uses matching
+sunrise/sunset. Before this, running the suite on a real holiday (Reformation Day) made every
+villager rest and broke production/construction tests.
+
+**Why:** CI must not depend on the calendar of the machine running it.
+
+**Cost:** tests do not exercise the real-date holiday path directly; `reality/calendar.py` covers it
+with pure functions and a separate fixed date if needed.

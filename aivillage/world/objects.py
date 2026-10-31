@@ -71,13 +71,46 @@ class BuildSite:
     h: int = 4
     progress: float = 0.0
     work: float = 0.0
+    queue: list[str] = field(default_factory=lambda: [
+        "foundation", "walls", "roof", "bell"])
+    active_index: int = 0
+    completed: list[str] = field(default_factory=list)
+
+    @property
+    def active(self) -> str:
+        if 0 <= self.active_index < len(self.queue):
+            return self.queue[self.active_index]
+        return ""
+
+    @property
+    def all_done(self) -> bool:
+        return self.active_index >= len(self.queue)
+
+    @property
+    def total_progress(self) -> float:
+        if not self.queue:
+            return 1.0
+        done = len(self.completed)
+        return min(1.0, (done + self.progress) / len(self.queue))
 
     def contribute(self, amount: float) -> bool:
-        """Returns True when the building is finished."""
-        if self.progress >= 1.0:
+        """Returns True when the current stage is finished."""
+        if self.progress >= 1.0 or self.all_done:
             return False
         self.progress = min(1.0, self.progress + amount)
         return self.progress >= 1.0
+
+    def next_stage(self) -> str:
+        """Mark the active stage complete and return the next stage key."""
+        if self.all_done:
+            return ""
+        current = self.active
+        if current and current not in self.completed:
+            self.completed.append(current)
+        self.active_index += 1
+        self.progress = 0.0
+        self.work = 0.0
+        return self.active
 
 
 def make_house_obj(name: str, tx: int, ty: int, w: int, h: int, roof: str,

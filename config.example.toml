@@ -9,6 +9,9 @@ window_width  = 1440
 window_height = 810
 zoom       = 3           # integer world scale; bigger = closer
 seed       = 1234
+save_slot  = 1           # 1-5 (slot picker not yet wired into the HUD)
+photo_mode = false       # reserved: start with the UI hidden
+seasonal_palette = true  # tint grass/trees by the real season
 
 [reality]
 # live  -> the village clock IS your clock
@@ -22,7 +25,8 @@ offline_weather  = "last_known"   # last_known | seasonal_sim
 night_on_launch  = "live"         # live | skip_to_dawn
 
 [llm]
-# auto | ollama | openai | anthropic | openai_compatible | none
+# auto | ollama | openai | anthropic | openai_compatible
+# claude_cli | codex_cli | subscription | mock | none
 provider     = "auto"
 model        = "llama3.2"
 base_url     = ""            # e.g. http://localhost:11434 or your LM Studio url
@@ -31,6 +35,23 @@ temperature  = 0.9
 max_tokens   = 300
 timeout_s    = 60
 ambient_dialogue = true
+
+# Subscription connectors. These drive the official, already-logged-in CLIs
+# (`claude -p` / `codex exec`); consumer subscriptions are not plain API keys.
+#   provider = "subscription"  -> tries Claude first, then Codex
+#   provider = "claude_cli"    -> Claude Code only
+#   provider = "codex_cli"     -> Codex only
+# Leave the commands empty to use whatever is on PATH.
+claude_command   = "claude"
+codex_command    = "codex"
+prefer_subscription = false # with provider="auto": try a signed-in CLI before API keys
+cli_model        = ""        # optional model for the CLI, e.g. "sonnet" or "gpt-5"
+cli_timeout_s    = 120
+
+# Villagers deciding for themselves: new trade, ambition, bio, quirk, hat, outfit.
+# Runs only with a real provider (never with mock). Press R in-game to ask now.
+self_directed   = true
+self_interval_s = 180
 
 [voice]
 enabled       = true
@@ -41,12 +62,20 @@ rate_scale    = 1.0
 [social]
 ambient_budget_s = 20      # minimum seconds between auto conversations
 work_chatter     = false   # tiny one-liners during work hours
+group_chats      = true    # reserved: group prompt helpers exist, scheduler not wired
+group_chance     = 0.35
+threads          = true    # reserved: thread memory helpers exist, scheduler not wired
 
 [news]
 enabled  = true
 poll_minutes = 40
 max_dispatches_per_day = 2
 tone     = "neutral"       # neutral | wholesome | strange_only
+mute_after_failures = 5    # stop hammering a dead feed
+backoff_base_s = 300
+backoff_max_s  = 21600
+alerts_enabled = true      # reserved: Bright Sky service exists, courier not wired
+alert_poll_minutes = 20
 # category weights used when choosing which story reaches the village
 [news.weights]
 world   = 0.40

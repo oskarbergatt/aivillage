@@ -7,33 +7,22 @@ from dataclasses import dataclass, field
 from functools import lru_cache
 
 from ..assets import sprites
+from ..reality.calendar import is_rest_day, routine_key
 from ..world.pathfinding import astar
 from .animator import Animator
+from .jobs import JOBS, job_for
 from .memory import MemoryBook
 from .needs import Needs
 from .persona import Persona
 
 TILE = 16
 
-TASKS = {
-    "farmer": ["watering the plots", "pulling weeds", "harvesting turnips", "sowing seeds"],
-    "builder": ["fitting a beam", "sawing planks", "hammering nails", "checking the level"],
-    "baker": ["kneading dough", "watching the oven", "carrying loaves to market"],
-    "blacksmith": ["heating iron", "hammering a blade", "quenching steel"],
-    "fisher": ["casting the line", "waiting for a bite", "reeling in"],
-    "artist": ["sketching the plaza", "mixing pigment", "painting the light"],
-    "herbalist": ["gathering herbs", "sorting roots", "brewing a tincture"],
-    "forager": ["searching the treeline", "collecting mushrooms", "checking snares"],
-}
-
-TOOLS = {"farmer": "hoe", "builder": "hammer", "baker": "basket",
-         "blacksmith": "hammer", "fisher": "rod", "artist": "brush",
-         "herbalist": "basket", "forager": "basket"}
-
-YIELD = {"farmer": ("food", 3), "builder": ("progress", 0.05),
-         "baker": ("food", 2), "blacksmith": ("coin", 2),
-         "fisher": ("food", 1), "artist": ("coin", 1),
-         "herbalist": ("food", 1), "forager": ("wood", 2)}
+# Kept as derived views so older call sites keep working, while the registry
+# stays the single source of truth.
+TASKS = {key: list(job.tasks) for key, job in JOBS.items()}
+TOOLS = {key: job.tool for key, job in JOBS.items() if job.tool}
+YIELD = {key: (job.resource, job.amount) for key, job in JOBS.items()
+         if job.resource}
 
 
 @lru_cache(maxsize=2048)
@@ -56,8 +45,16 @@ class Bubble:
 
 def block_at(persona: Persona, when) -> str:
     minute = when.hour * 60 + when.minute
-    if when.weekday() == 6 and not persona.nocturnal:
-        return "free" if 7 * 60 <= minute < 22 * 60 else "sleep"
+    routine = routine_key(when)
+    if not persona.nocturnal:
+        if routine in ("holiday", "festival") or is_rest_day(when):
+            return "free" if 7 * 60 <= minute < 22 * 60 else "sleep"
+        if not persona.is_child:
+            if routine == "market" and 9 * 60 <= minute < 14 * 60:
+                return "market"
+            if routine == "repairs" and persona.job == "builder" \
+                    and 9 * 60 <= minute < 12 * 60:
+                return "repair"
     best = "idle"
     for start_h, end_h, kind in persona.schedule:
         start = int(start_h * 60)
@@ -131,6 +128,65 @@ class Agent:
     def say(self, text: str, seconds: float = 5.0, pending: bool = False,
             kind: str = "speech", color=(240, 232, 210)) -> None:
         self.bubble = Bubble(text, seconds, pending, kind, color)
+
+    # -- self-authored character ----------------------------------------
+    def set_job(self, key: str) -> bool:
+        """Change an adult's trade. Children keep their lessons."""
+        if self.persona.is_child or key not in JOBS or JOBS[key].child:
+            return False
+        job = JOBS[key]
+        changed = key != self.persona.job
+        self.persona.job = key
+        self.persona.work = job.work
+        self.persona.authored = True
+        if changed:
+            self.task_name = ""
+            self.state = "free"
+            self.action_timer = 2
+            self.target = None
+        return changed
+
+    def apply_self(self, data: dict) -> list[str]:
+        """Apply a model-authored identity update. Returns the fields changed.
+
+        Everything is validated here: a hallucinated job, hat or colour is
+        ignored rather than corrupting the simulation.
+        """
+        if not isinstance(data, dict):
+            return []
+        changed: list[str] = []
+        p = self.persona
+        ambition = " ".join(str(data.get("ambition", "")).split())[:120]
+        if ambition and ambition != p.ambition:
+            p.ambition = ambition
+            changed.append("ambition")
+        for key, limit in (("bio", 240), ("quirk", 90)):
+            value = " ".join(str(data.get(key, "")).split())[:limit]
+            if value and value != getattr(p, key):
+                setattr(p, key, value)
+                changed.append(key)
+        raw_job = ((data.get("dream_job") or data.get("job")) if p.is_child
+                   else (data.get("job") or data.get("dream_job")))
+        job_key = str(raw_job or "").strip().lower()
+        if p.is_child:
+            if job_key in JOBS and not JOBS[job_key].child and job_key != p.dream_job:
+                p.dream_job = job_key
+                changed.append("dream_job")
+        elif job_key in JOBS and not JOBS[job_key].child and self.set_job(job_key):
+            changed.append("job")
+        hat = str(data.get("hat", "")).strip().lower()
+        if hat in ("", "straw", "cap", "hood") and hat != p.look.hat:
+            p.look.hat = hat
+            changed.append("hat")
+        try:
+            cloth = int(data.get("outfit", -1))
+        except Exception:
+            cloth = -1
+        if 0 <= cloth <= 7 and cloth != p.look.cloth:
+            p.look.cloth = cloth
+            changed.append("outfit")
+        p.authored = True
+        return changed
 
     # -- movement -------------------------------------------------------
     def go_to_tile(self, tx: int, ty: int, exact: tuple[int, int] | None = None) -> bool:
@@ -207,8 +263,9 @@ class Agent:
         self.intent = block
         self.task_progress = 0.0
         weather = ctx.weather
+        job = job_for(self.persona.job)
         stormy = weather.condition in ("storm", "snow") or (
-            weather.wet and self.persona.job not in ("baker", "blacksmith", "builder"))
+            weather.wet and not job.indoor and self.persona.job != "builder")
 
         if block == "sleep":
             self.state = "walk"
@@ -217,15 +274,55 @@ class Agent:
             return
         if block == "meal":
             self.state = "walk"
-            target = "tavern_door" if self.rng.random() < 0.6 else "home_orin"
-            self.go_to_point(target, jitter=1)
+            if self.persona.is_child:
+                self.go_to_point(self.home_point, jitter=1)
+            else:
+                target = "tavern_door" if self.rng.random() < 0.6 else "home_orin"
+                self.go_to_point(target, jitter=1)
             self.task_name = "going to eat"
             return
+        if block == "school":
+            self.state = "walk"
+            if stormy:
+                self.go_to_point("tavern_door", jitter=2)
+            else:
+                self.go_to_point("school", jitter=1)
+            self.task_name = "going to lessons"
+            return
+        if block == "play":
+            self.state = "walk"
+            r = self.rng.random()
+            if r < 0.5:
+                self.go_to_point("plaza", jitter=3)
+            elif r < 0.75:
+                self.go_to_point("pond", jitter=2)
+            else:
+                self.go_to_point("woods_west", jitter=2)
+            self.task_name = "running wild"
+            return
+        if block == "market":
+            self.state = "walk"
+            if not self.go_to_point("market_front", jitter=3):
+                self.go_to_point("plaza", jitter=3)
+            self.task_name = "keeping the Saturday market"
+            return
+        if block == "repair":
+            self.state = "walk"
+            self.go_to_point("buildsite", jitter=2)
+            self.task_name = "inspecting the repairs"
+            return
         if block == "work":
-            if stormy and self.persona.job not in ("builder",):
+            if stormy and self.persona.job != "builder":
                 self._choose_intent("break", ctx)
                 return
-            work = self.persona.work
+            outlook = ctx.forecast(3) if hasattr(ctx, "forecast") else None
+            if (outlook is not None and outlook.condition in ("rain", "storm", "snow")
+                    and self.persona.job in ("farmer", "fisher", "forager", "herbalist")):
+                self.state = "walk"
+                self.go_to_point("tavern_door", jitter=2)
+                self.task_name = "bringing the work in before the weather"
+                return
+            work = job.work
             self.state = "walk"
             ok = self.go_to_point(work, jitter=1)
             if not ok:
@@ -234,7 +331,7 @@ class Agent:
             return
         if block == "break":
             self.state = "walk"
-            self.go_to_point(self.persona.work, jitter=2)
+            self.go_to_point(job.work if not self.persona.is_child else "school", jitter=2)
             self.task_name = "taking shelter"
             return
         # free time
@@ -305,11 +402,20 @@ class Agent:
             return
 
         # arrived / stationary behaviour
-        self.animator.update(dt, False, self.state == "work")
+        self.animator.update(dt, False, self.state in ("work", "school", "play"))
         if self.state == "work":
             self._work(dt, ctx)
         elif self.state == "sleep":
             pass
+        elif self.state == "school":
+            self.action_timer -= dt
+            if self.action_timer <= 0:
+                self.action_timer = self.rng.uniform(20, 45) * 60
+        elif self.state == "play":
+            self.action_timer -= dt
+            if self.action_timer <= 0:
+                self.state = "walk"
+                self._new_wander_target(ctx)
         elif self.state == "meal":
             self.action_timer -= dt
             if self.action_timer <= 0:
@@ -318,7 +424,7 @@ class Agent:
         elif self.state in ("free", "break", "idle"):
             self.action_timer -= dt
             if self.action_timer <= 0:
-                if self.block == "free":
+                if self.block in ("free", "play"):
                     self.state = "walk"
                     self._new_wander_target(ctx)
                 else:
@@ -339,6 +445,17 @@ class Agent:
                 line = ctx.flavour_meal(self)
                 if line:
                     self.say(line, 4.0, color=(240, 224, 190))
+            return
+        if self.intent == "school":
+            self.state = "school"
+            self.task_name = self.rng.choice(
+                ("at lessons", "copying letters", "listening to a story"))
+            self.action_timer = ctx.rng.uniform(12, 30) * 60
+            return
+        if self.intent == "play":
+            self.state = "play"
+            self.task_name = self.rng.choice(TASKS["child"])
+            self.action_timer = ctx.rng.uniform(4, 9) * 60
             return
         if self.intent == "work":
             self.state = "work"
@@ -361,23 +478,21 @@ class Agent:
     def _work(self, dt: float, ctx) -> None:
         if not self.task_name:
             self._pick_task()
-        if self.persona.job == "builder":
-            self.task_progress += dt
-        else:
-            self.task_progress += dt
+        self.task_progress += dt
         if self.task_progress >= self.task_time:
             self._complete_task(ctx)
             self._pick_task()
 
     def _complete_task(self, ctx) -> None:
-        job = self.persona.job
-        resource, amount = YIELD.get(job, ("food", 1))
-        if job == "farmer":
+        job = job_for(self.persona.job)
+        if self.persona.is_child or job.key == "child":
+            return
+        if job.key == "farmer":
             ctx.tend_plot(self)
-        if resource == "progress":
-            ctx.build(amount, self)
-        else:
-            ctx.gain(resource, amount, self)
+        if job.resource == "progress":
+            ctx.build(job.amount, self)
+        elif job.resource:
+            ctx.gain(job.resource, job.amount, self)
         self.needs.energy -= 1.0
         self.needs.fun += 1.0
 

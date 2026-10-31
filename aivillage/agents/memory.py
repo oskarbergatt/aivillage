@@ -1,4 +1,4 @@
-"""Memories and relationships."""
+"""Memories, persistent conversation threads and relationship stages."""
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -12,12 +12,47 @@ class Memory:
     dispatch_id: str = ""
 
 
+@dataclass
+class ThreadLine:
+    speaker: str          # "you" | "them" | a villager's name
+    text: str
+    day: str = ""
+
+
+STAGES = (
+    (-0.50, "rival"),
+    (-0.15, "wary"),
+    (0.15, "acquaintance"),
+    (0.45, "friendly"),
+    (0.75, "friend"),
+    (1.01, "close"),
+)
+
+PROMPT_WORDS = {
+    "rival": "bitter rival",
+    "wary": "irritated by",
+    "acquaintance": "acquainted",
+    "friendly": "friendly",
+    "friend": "close friend",
+    "close": "very close friend",
+}
+
+
+def relation_stage(value: float) -> str:
+    for threshold, stage in STAGES:
+        if value < threshold:
+            return stage
+    return "close"
+
+
 class MemoryBook:
     MAX = 28
+    MAX_THREAD = 24
 
     def __init__(self) -> None:
         self.entries: list[Memory] = []
         self.affinity: dict[str, float] = {}
+        self.thread: list[ThreadLine] = []
 
     def add(self, text: str, day: str = "", kind: str = "event",
             dispatch_id: str = "") -> None:
@@ -37,14 +72,23 @@ class MemoryBook:
         self.affinity[other_key] = v
         return v
 
+    def stage(self, other_key: str) -> str:
+        return relation_stage(self.about(other_key))
+
     def relation_word(self, other_key: str) -> str:
-        v = self.about(other_key)
-        if v > 0.55:
-            return "close friend"
-        if v > 0.2:
-            return "friendly"
-        if v < -0.5:
-            return "bitter rival"
-        if v < -0.2:
-            return "irritated by"
-        return "acquainted"
+        return PROMPT_WORDS.get(self.stage(other_key), "acquainted")
+
+    # -- persistent dialogue --------------------------------------------
+    def add_thread(self, speaker: str, text: str, day: str = "") -> None:
+        text = " ".join(str(text or "").split())
+        if not text:
+            return
+        self.thread.append(ThreadLine(speaker, text[:400], day))
+        if len(self.thread) > self.MAX_THREAD:
+            self.thread = self.thread[-self.MAX_THREAD:]
+
+    def thread_recent(self, n: int = 8) -> list[ThreadLine]:
+        return self.thread[-n:]
+
+    def thread_prompt(self, n: int = 8) -> list[str]:
+        return [f"{line.speaker}: {line.text}" for line in self.thread[-n:]]

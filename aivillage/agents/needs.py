@@ -18,7 +18,8 @@ class Needs:
     def decay(self, minutes: float, activity: str, diligence: float = 0.5) -> None:
         h = minutes / 60.0
         rate = {"sleep": 0.0, "work": 1.25, "walk": 1.0, "meal": 0.6,
-                "free": 0.9, "idle": 0.7, "talk": 0.8, "assembly": 0.9}.get(activity, 1.0)
+                "free": 0.9, "idle": 0.7, "talk": 0.8, "assembly": 0.9,
+                "school": 0.7, "play": 1.15}.get(activity, 1.0)
         self.hunger = clamp(self.hunger - 4.4 * h * rate)
         self.fun = clamp(self.fun - 3.6 * h * rate)
         self.social = clamp(self.social - 4.0 * h * (0.6 + diligence * 0.8))

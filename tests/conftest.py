@@ -53,16 +53,17 @@ def app(config, tmp_path, monkeypatch):
     monkeypatch.setattr("aivillage.app.make_llm", lambda cfg: LLMClient(cfg))
     application = VillageApp(config, new_game=True, seed=7)
     application.news.enabled = False
-    # Deterministic midday weather: clear, dry, mild.
-    sunrise, sunset = _approx_sun(application.clock.now, 54.09)
+    # A fixed, ordinary Thursday: real-date holidays must not make CI flaky.
+    from datetime import datetime
+    fixed = datetime(2026, 10, 29, 10, 0)
+    sunrise, sunset = _approx_sun(fixed, 54.09)
     application.weather_service.state = WeatherState(
         code=0, condition="clear", temp_c=15.0, wind=4.0, is_day=True,
         sunrise=sunrise, sunset=sunset, source="live")
     application.clock.live = False
     application.clock.sim_speed = 1
     application.clock.paused = False
-    from datetime import datetime
-    application.clock._sim = datetime.combine(application.clock.now.date(),
-                                              datetime.min.time()).replace(hour=10)
+    application.clock._sim = fixed
+    application.current_day_key = fixed.strftime("%Y-%m-%d")
     yield application
     application.shutdown()

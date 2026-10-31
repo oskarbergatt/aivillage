@@ -8,6 +8,7 @@ import pygame
 
 from ..assets.font import draw_text, draw_wrapped, get_font, render, wrap
 from ..assets.palette import P
+from ..agents.jobs import ADULT_JOBS, JOBS
 from ..agents.needs import clamp
 
 TITLE = "aivillage"
@@ -102,6 +103,8 @@ class UI:
         self._toasts(screen, app, w, h)
         if app.show_chronicle:
             self._chronicle(screen, app, w, h)
+        if getattr(app, "show_jobs", False):
+            self._jobs(screen, app, w, h)
 
     # -- HUD -------------------------------------------------------------
     def _top_left(self, screen, app, w, h) -> None:
@@ -203,20 +206,25 @@ class UI:
 
         row2 = pygame.Rect(rect.x + 12, rect.y + 86, rect.w - 24, 26)
         x = row2.x
-        self._button(screen, pygame.Rect(x, row2.y, 56, row2.h),
-                     "EN" if app.i18n.language == "de" else "DE", "lang")
-        x += 62
-        self._button(screen, pygame.Rect(x, row2.y, 74, row2.h),
-                     "UNMUTE" if app.voice.muted else "MUTE", "mute",
-                     active=app.voice.muted)
-        x += 80
-        self._button(screen, pygame.Rect(x, row2.y, 54, row2.h), "C", "chronicle")
-        x += 60
-        self._button(screen, pygame.Rect(x, row2.y, 54, row2.h), "S", "save")
-        x += 60
-        self._button(screen, pygame.Rect(x, row2.y, 62, row2.h), "V", "visitor")
-        draw_text(screen, _truncate(app.voice.label(), 16, 120),
-                  (rect.right - 14, row2.y + 5), 16, P["ui_dim"], anchor="topright")
+        talk_agent = app.selected_agent()
+        buttons = [
+            ("EN" if app.i18n.language == "de" else "DE", 56, "lang", False, True),
+            ("UNMUTE" if app.voice.muted else "MUTE", 76, "mute",
+             app.voice.muted, True),
+            ("C", 46, "chronicle", app.show_chronicle, True),
+            ("S", 46, "save", False, True),
+            ("V", 46, "visitor", False, True),
+            ("J", 46, "jobs", getattr(app, "show_jobs", False), True),
+            ("R", 46, "self", app.self_pending is not None,
+             talk_agent is not None and app.llm.available),
+        ]
+        for label, bw, action, active, enabled in buttons:
+            self._button(screen, pygame.Rect(x, row2.y, bw, row2.h), label,
+                         action, active=active, enabled=enabled)
+            x += bw + 5
+        draw_text(screen, _truncate(app.voice.label(), 8, 46),
+                  (rect.right - 14, row1.y + 9), 8, P["ui_dim"],
+                  anchor="topright")
 
         if app.world.build_site is not None:
             prog = app.world.build_site.progress
@@ -235,7 +243,7 @@ class UI:
         bar = pygame.Rect(0, h - 34, w, 34)
         pygame.draw.rect(screen, (20, 18, 28), bar)
         pygame.draw.line(screen, P["ui_line"], (0, bar.y), (w, bar.y))
-        hint = self.i18n.t("ui.hint_pan") + " · T talk · C chronicle · V traveller · " + \
+        hint = self.i18n.t("ui.hint_pan") + " · T talk · R self · J jobs · C chronicle · V traveller · " + \
             self.i18n.t("ui.select_lang")
         draw_text(screen, hint, (16, bar.y + 9), 16, P["ui_dim"])
 
@@ -265,8 +273,13 @@ class UI:
         pygame.draw.rect(screen, P["ui_line"], pr.inflate(4, 4), 1)
         draw_text(screen, p.name, (rect.x + 122, rect.y + 14), 16, P["ui_text"],
                   chunky=True)
-        draw_text(screen, t(f"job.{p.job}"), (rect.x + 122, rect.y + 38), 16,
-                  P["ui_accent"])
+        role = t(f"job.{p.job}")
+        if p.age:
+            role += " · " + t("ui.age", age=p.age)
+        if p.is_child and p.dream_job:
+            role += " · " + t("ui.dream", job=t(f"job.{p.dream_job}"))
+        draw_text(screen, _truncate(role, 16, rect.right - rect.x - 136),
+                  (rect.x + 122, rect.y + 38), 16, P["ui_accent"])
         state = agent.state if agent.state else "idle"
         draw_text(screen, t(f"state.{state}"), (rect.x + 122, rect.y + 58), 16,
                   P["ui_dim"])
@@ -283,6 +296,11 @@ class UI:
         y += draw_wrapped(screen, task, (rect.x + 14, y), rect.w - 28, 16,
                           P["ui_text"], max_lines=2)
         y += 8
+        if p.ambition:
+            draw_text(screen, t("ui.ambition"), (rect.x + 14, y), 16, P["ui_dim"])
+            draw_text(screen, _truncate(p.ambition, 16, rect.w - 132),
+                      (rect.x + 110, y), 16, P["ui_accent"])
+            y += 20
 
         draw_text(screen, t("ui.needs"), (rect.x + 14, y), 16, P["ui_dim"])
         y += 20
@@ -328,14 +346,22 @@ class UI:
 
         draw_text(screen, t("ui.memories"), (rect.x + 14, y), 16, P["ui_dim"])
         y += 20
-        for line in agent.memory.recent(2):
+        for line in agent.memory.recent(1):
             y += draw_wrapped(screen, "· " + line, (rect.x + 14, y), rect.w - 28,
-                              16, P["ui_dim"], max_lines=2) + 4
+                              16, P["ui_dim"], max_lines=1) + 4
 
         if app.llm.available:
-            btn = pygame.Rect(rect.x + 14, rect.bottom - 40, rect.w - 28, 28)
-            self._button(screen, btn, t("ui.chat_hint", name=p.name), "talk",
+            full = rect.w - 28
+            chat_w = int(full * 0.56)
+            gap = 8
+            chat_btn = pygame.Rect(rect.x + 14, rect.bottom - 40, chat_w, 28)
+            self_btn = pygame.Rect(chat_btn.right + gap, rect.bottom - 40,
+                                   full - chat_w - gap, 28)
+            self._button(screen, chat_btn, t("ui.chat_short"), "talk",
                          active=True, size=16)
+            self._button(screen, self_btn, t("ui.self_short"), "self",
+                         active=getattr(app, "self_pending", None) == agent.key,
+                         size=16)
         else:
             draw_text(screen, t("ui.no_llm"), (rect.centerx, rect.bottom - 26), 16,
                       P["ui_bad"], anchor="center")
@@ -465,22 +491,75 @@ class UI:
     # -- setup -----------------------------------------------------------
     def _setup(self, screen, app, w, h) -> None:
         t = self.i18n.t
-        rect = pygame.Rect(16, h - 34 - 166, 560, 156)
+        rect = pygame.Rect(16, h - 34 - 208, 620, 198)
         self._panel(screen, rect, fill=(38, 26, 34), border=(126, 78, 82))
         draw_text(screen, t("ui.no_llm"), (rect.x + 16, rect.y + 12), 16,
                   P["ui_bad"], chunky=True)
         y = rect.y + 40
         y += draw_wrapped(screen, t("ui.no_llm_hint"), (rect.x + 16, y),
                           rect.w - 140, 16, P["ui_text"], max_lines=3)
-        draw_text(screen, "Ollama:  ollama run llama3.2", (rect.x + 16, y + 4),
-                  16, P["ui_dim"])
-        draw_text(screen, "OpenAI:  OPENAI_API_KEY=... in .env", (rect.x + 16,
-                                                                  y + 24),
-                  16, P["ui_dim"])
+        lines = [
+            "Ollama:  ollama run llama3.2",
+            "OpenAI:  OPENAI_API_KEY=... in .env",
+            "Claude:  claude  (subscription login)",
+            "Codex:   codex   (subscription login)",
+        ]
+        for i, line in enumerate(lines):
+            draw_text(screen, line, (rect.x + 16, y + 4 + i * 20), 16, P["ui_dim"])
         self._button(screen, pygame.Rect(rect.right - 112, rect.y + 40, 96, 28),
                      "RETRY", "llm_retry")
         self._button(screen, pygame.Rect(rect.right - 38, rect.y + 8, 24, 24),
                      "x", "close_setup")
+
+    # -- jobs ------------------------------------------------------------
+    def _jobs(self, screen, app, w, h) -> None:
+        t = self.i18n.t
+        shade = pygame.Surface((w, h), pygame.SRCALPHA)
+        shade.fill((8, 8, 14, 190))
+        screen.blit(shade, (0, 0))
+        width = min(780, w - 60)
+        height = min(560, h - 60)
+        rect = pygame.Rect((w - width) // 2, (h - height) // 2, width, height)
+        self._panel(screen, rect, fill=(28, 25, 38), border=P["ui_line"])
+        draw_text(screen, t("ui.jobs"), (rect.x + 20, rect.y + 14), 16,
+                  P["ui_accent"], chunky=True)
+        draw_text(screen, t("ui.jobs_hint"), (rect.x + 20, rect.y + 38), 8,
+                  P["ui_dim"])
+        self._button(screen, pygame.Rect(rect.right - 44, rect.y + 10, 30, 30),
+                     "x", "close_jobs")
+
+        body = pygame.Rect(rect.x + 20, rect.y + 62, rect.w - 40, rect.h - 82)
+        keys = list(ADULT_JOBS) + ["child"]
+        rows = (len(keys) + 1) // 2
+        colw = body.w // 2
+        rowh = max(24, min(34, body.h // max(1, rows)))
+        selected = app.selected_agent()
+        for idx, key in enumerate(keys):
+            col = idx // rows
+            row = idx % rows
+            x = body.x + col * colw
+            y = body.y + row * rowh
+            job = JOBS[key]
+            active = selected is not None and selected.persona.job == key
+            dream = (selected is not None and selected.persona.is_child
+                     and selected.persona.dream_job == key)
+            colour = (P["ui_accent"] if active else
+                      (P["ui_cool"] if dream else P["ui_text"]))
+            draw_text(screen, t(f"job.{key}"), (x, y), 16, colour)
+            if key == "child":
+                holders = [a.name.split()[0] for a in app.agents
+                           if a.persona.is_child]
+            else:
+                holders = [a.name.split()[0] for a in app.agents
+                           if not a.persona.is_child and a.persona.job == key]
+            detail = ", ".join(holders) if holders else t("ui.job_open")
+            draw_text(screen, _truncate(detail, 8, colw - 200), (x + 148, y + 4),
+                      8, P["ui_dim"])
+            if job.resource and not job.child:
+                gain = (t("ui.progress") if job.resource == "progress"
+                        else f"+{job.amount:g} {t('ui.' + job.resource)}")
+                draw_text(screen, gain, (x + colw - 14, y + 4), 8, P["ui_dim"],
+                          anchor="topright")
 
     # -- toasts ----------------------------------------------------------
     def _toasts(self, screen, app, w, h) -> None:

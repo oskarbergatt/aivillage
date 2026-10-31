@@ -269,6 +269,37 @@ def crop(stage: int = 0) -> pygame.Surface:
     return s
 
 
+@lru_cache(maxsize=4)
+def windmill() -> pygame.Surface:
+    """A small windmill: stone base, wooden sails, 3x4 tiles."""
+    s = surf(54, 72)
+    rng = random.Random(771)
+    pygame.draw.rect(s, P["stone_d"], (14, 38, 26, 32))
+    pygame.draw.rect(s, P["stone"], (16, 40, 22, 28))
+    dither(s, (17, 41, 20, 26), P["stone_l"], 0.25, rng)
+    pygame.draw.polygon(s, P["plank"], [(18, 12), (36, 12), (41, 42), (13, 42)])
+    for y in range(16, 42, 5):
+        pygame.draw.line(s, P["wood_d"], (17, y), (37, y))
+    pygame.draw.rect(s, P["wood_d"], (15, 10, 24, 5))
+    pygame.draw.polygon(s, P["roof_red_d"], [(12, 12), (42, 12), (27, 2)])
+    pygame.draw.polygon(s, P["roof_red"], [(15, 11), (39, 11), (27, 4)])
+    pygame.draw.rect(s, P["wood_d"], (23, 52, 8, 18))
+    pygame.draw.rect(s, P["window"], (22, 27, 4, 5))
+    pygame.draw.rect(s, P["window_d"], (28, 27, 4, 5))
+    cx, cy = 27, 22
+    for dx, dy in ((0, -1), (1, 0), (0, 1), (-1, 0)):
+        for step in range(4, 22, 4):
+            x = cx + dx * step
+            y = cy + dy * step
+            w = 7 if dx else 5
+            h = 5 if dy else 7
+            pygame.draw.rect(s, P["wood_d"], (x - w // 2, y - h // 2, w, h))
+            pygame.draw.rect(s, P["cream"], (x - w // 2 + 1, y - h // 2 + 1,
+                                             max(1, w - 2), max(1, h - 2)))
+    pygame.draw.circle(s, P["wood_d"], (cx, cy), 3)
+    return s
+
+
 @lru_cache(maxsize=8)
 def bell_post() -> pygame.Surface:
     s = surf(20, 34)

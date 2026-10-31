@@ -34,14 +34,15 @@ class Renderer:
         self._dots = 0.0
 
     # -- scaling cache ---------------------------------------------------
-    def _scaled_sprite(self, surf: pygame.Surface) -> pygame.Surface:
-        key = (id(surf), self.camera.zoom)
+    def _scaled_sprite(self, surf: pygame.Surface,
+                       factor: float = 1.0) -> pygame.Surface:
+        key = (id(surf), self.camera.zoom, round(factor, 3))
         cached = self._scaled.get(key)
         if cached is not None:
             return cached
         scaled = pygame.transform.scale(
-            surf, (surf.get_width() * self.camera.zoom,
-                   surf.get_height() * self.camera.zoom))
+            surf, (max(1, int(surf.get_width() * self.camera.zoom * factor)),
+                   max(1, int(surf.get_height() * self.camera.zoom * factor))))
         self._scaled[key] = scaled
         self._keep[key] = surf
         return scaled
@@ -135,14 +136,15 @@ class Renderer:
 
     def _draw_agent(self, screen, agent, selected) -> None:
         zoom = self.camera.zoom
-        sprite = self._scaled_sprite(agent.sprite())
+        factor = 0.72 if getattr(agent.persona, "is_child", False) else 1.0
+        sprite = self._scaled_sprite(agent.sprite(), factor)
         sx, sy = self.camera.world_to_screen(agent.x, agent.y)
-        self._shadow(screen, sx, sy, max(10, 12 * zoom))
+        self._shadow(screen, sx, sy, max(7, int(12 * zoom * factor)))
         screen.blit(sprite, (sx - sprite.get_width() // 2,
                              sy - sprite.get_height() + 2))
         if selected is agent:
             pulse = 0.5 + 0.5 * math.sin(time.time() * 5)
-            r = int((9 + pulse * 2) * zoom)
+            r = int((8 + pulse * 2) * zoom * factor)
             pygame.draw.circle(screen, P["ui_accent"], (sx, sy - 2), r, 2)
             self._name_tag(screen, agent.name, sx, sy - sprite.get_height() - 6,
                            P["ui_accent"])

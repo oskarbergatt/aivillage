@@ -28,12 +28,50 @@ def lang(language: str) -> str:
 
 def persona_card(p: Persona, language: str) -> str:
     traits = ", ".join(f"{k}={v:.2f}" for k, v in p.traits.items())
+    if p.is_child:
+        role = f"a child of {p.age}" if p.age else "a child"
+    else:
+        role = f"the village {p.job}"
+    ambition = f" Your ambition: {p.ambition}." if p.ambition else ""
     return (
-        f"You are {p.name}, the village {p.job}. "
+        f"You are {p.name}, {role}. "
         f"Personality: {traits}. "
         f"Background: {p.bio} "
-        f"Quirk: {p.quirk}. "
+        f"Quirk: {p.quirk}.{ambition} "
         f"Always answer in {lang(language)}."
+    )
+
+
+def self_system(p: Persona, language: str) -> str:
+    if p.is_child:
+        role = (f"You are {p.name}, a {p.age}-year-old child in a small pixel "
+                "village. You may choose what you dream of becoming, and sharpen "
+                "who you are.")
+    else:
+        role = (f"You are {p.name}, the village {p.job}. You may choose a new "
+                "trade and reshape your own life.")
+    return (
+        f"{role} Decide for yourself, not for the player. Write in "
+        f"{lang(language)}. Keep to the offered trades; give a one-sentence "
+        "ambition, a short bio and quirk, and a hat and outfit you would "
+        "actually choose. Never mention AI or the modern world. Return JSON only."
+    )
+
+
+def self_user(p: Persona, ctx: dict, choices: list[dict],
+              child: bool = False) -> str:
+    options = ", ".join(c["key"] for c in choices)
+    field = "dream_job" if child else "job"
+    return (
+        f"{world_line(ctx)}\n"
+        f"Your current background: {p.bio}\n"
+        f"Your quirk: {p.quirk}\n"
+        f"Your ambition so far: {p.ambition or 'none yet'}\n"
+        f"Offered trades: {options}\n"
+        'Return JSON only: {"ambition": "one sentence", "bio": "2 short sentences", '
+        '"quirk": "one small habit", '
+        f'"{field}": "one of the offered keys", '
+        '"hat": "" or "straw" or "cap" or "hood", "outfit": 0-7}'
     )
 
 
@@ -52,14 +90,17 @@ def chat_system(p: Persona, language: str) -> str:
 def chat_user(p: Persona, message: str, ctx: dict) -> str:
     memories = "; ".join(ctx.get("memories", [])[-5:]) or "nothing notable yet"
     neighbours = ctx.get("relations", "")
+    thread = ctx.get("thread", []) or []
+    history = "\n".join(f"- {line}" for line in thread[-8:]) or "- this is the first time you speak"
     return (
         f"{world_line(ctx)}\n"
         f"Your recent memories: {memories}\n"
+        f"Your conversation so far:\n{history}\n"
         f"How you feel right now: {ctx.get('mood', 'steady')}. "
         f"You are currently {ctx.get('activity', 'standing around')}.\n"
         f"{neighbours}\n"
         f"The traveller/player says to you: \"{message}\"\n"
-        "Reply in character. Return JSON only: "
+        "Reply in character, and remember what was said earlier. Return JSON only: "
         '{"line": "...", "emotion": "one of: cheerful|calm|gruff|sad|curious|angry|wistful"}'
     )
 
@@ -84,6 +125,54 @@ def exchange_user(a: Persona, b: Persona, ctx: dict, topic: str = "") -> str:
         f"Shared news on their minds: {topic or 'nothing in particular'}.\n"
         'Return JSON only: {"lines": [{"speaker": "a", "text": "..."}, '
         '{"speaker": "b", "text": "..."}]}'
+    )
+
+
+def group_system(language: str) -> str:
+    return (
+        "You write a short, lively village conversation between three or four "
+        f"characters gathered in the square. Write in {lang(language)}. 4 to 8 lines "
+        "total, each 1-2 short sentences. They interrupt, joke, disagree and drift "
+        "off topic. Never mention AI or the modern world."
+    )
+
+
+def group_user(members: list[Persona], ctx: dict, topic: str = "",
+               moods: dict[str, str] | None = None) -> str:
+    moods = moods or {}
+    card = "\n".join(
+        f"- {p.name}, the {p.job}: {p.bio} Quirk: {p.quirk} "
+        f"Mood: {moods.get(p.key, 'steady')}."
+        for p in members
+    )
+    names = ", ".join(p.name for p in members)
+    return (
+        f"{world_line(ctx)}\n"
+        f"Gathered here: {names}.\n{card}\n"
+        f"What is on their minds: {topic or 'the day, the weather, the village'}.\n"
+        'Return JSON only: {"lines": [{"speaker": "exact name", "text": "..."}]}'
+    )
+
+
+def alert_system(language: str) -> str:
+    return (
+        "You are a courier carrying an official weather warning into a small "
+        "pre-industrial village. Keep the real hazard, severity and timing, but "
+        "translate the wording into the village's frame of reference (roofs, boats, "
+        f"livestock, the harvest, the road). Write in {lang(language)}, under 200 "
+        "characters, urgent but not sensational. No modern agencies or technology."
+    )
+
+
+def alert_user(headline: str, description: str, instruction: str,
+               severity: str, language: str) -> str:
+    return (
+        f"Official warning: {headline}\n"
+        f"Severity: {severity}\n"
+        f"Details: {description[:600]}\n"
+        f"Advice: {instruction[:300]}\n"
+        'Return JSON only: {"headline": "the courier\'s warning", '
+        '"tone": "bad", "topic": "weather"}'
     )
 
 

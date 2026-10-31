@@ -40,6 +40,16 @@ class Persona:
     voice: Voice
     schedule: list[tuple[float, float, str]] = field(default_factory=list)
     nocturnal: bool = False
+    age: int = 0                       # 0 = adult / unspecified
+    child: bool = False
+    parent: str = ""                   # persona key of the grown-up they live with
+    ambition: str = ""                 # self-authored, LLM-written
+    dream_job: str = ""                # children only
+    authored: bool = False             # has the model chosen a calling yet?
+
+    @property
+    def is_child(self) -> bool:
+        return self.child or self.age in range(1, 16)
 
     def trait(self, name: str) -> float:
         return float(self.traits.get(name, 0.5))

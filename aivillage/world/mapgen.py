@@ -154,6 +154,11 @@ class World:
             ("sable", 26, 30, 4, 3, "roof_plum", False),
             ("nim", 40, 32, 4, 3, "roof_blue", False),
             ("tavern", 24, 19, 4, 3, "roof_red", True),
+            # v0.3 arrivals
+            ("june", 6, 14, 4, 3, "roof_ochre", True),
+            ("fen", 51, 8, 4, 3, "roof_blue", False),
+            ("mira", 6, 33, 4, 3, "roof_plum", True),
+            ("tobin", 34, 38, 4, 3, "roof_red", True),
         ]
         for i, (name, tx, ty, w, h, roof, shop) in enumerate(layout):
             obj = make_house_obj(name, tx, ty, w, h, roof, seed=i * 7 + self.seed,
@@ -170,6 +175,7 @@ class World:
         self._add_point_obj("market", sprites.market_stall(), 34, 26, 3, 2)
         self._add_point_obj("bench_a", sprites.bench(), 28, 25, 2, 1, solid=False)
         self._add_point_obj("bench_b", sprites.bench(), 34, 25, 2, 1, solid=False)
+        self._add_point_obj("mill", sprites.windmill(), 52, 14, 3, 4)
 
         for i, (tx, ty) in enumerate([(27, 20), (36, 20), (27, 25), (36, 25),
                                       (24, 23), (44, 23)]):
@@ -199,6 +205,7 @@ class World:
         self.points["woods_west"] = self.tile_center(6, 36)
         self.points["woods_east"] = self.tile_center(57, 14)
         self.points["plaza"] = self.tile_center(31, 22)
+        self.points["school"] = self.tile_center(30, 21)
         self.points["tavern_door"] = self.points["home_tavern"]
         self.points["market_front"] = self.tile_center(35, 28)
         self.points["road"] = self.tile_center(1, self.road_y)

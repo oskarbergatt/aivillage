@@ -17,6 +17,7 @@ from datetime import datetime
 import pygame
 
 from .agents.brain import Agent
+from .agents.jobs import JOBS, ADULT_JOBS, job_choices
 from .agents.roster import ROSTER
 from .agents.visitor import Visitor
 from .assets import sprites
@@ -105,7 +106,10 @@ class VillageApp:
         self.follow_selected = False
         self.chat = ChatState()
         self.show_chronicle = False
+        self.show_jobs = False
         self.setup_dismissed = False
+        self.self_pending: str | None = None
+        self._self_timer = 40.0
 
         self.stats = {"wood": 14, "stone": 6, "food": 22, "coin": 7}
         self.chronicle: list[dict] = []
@@ -394,6 +398,77 @@ class VillageApp:
             })
         return ctx
 
+    # -- self-authored identities ---------------------------------------
+    def request_self(self, agent: Agent | None = None) -> bool:
+        """Ask the model to let a villager choose who they are."""
+        agent = agent or self.selected_agent()
+        if agent is None:
+            return False
+        if not self.llm.available:
+            self.toast(self.i18n.t("ui.no_llm"))
+            return False
+        if not self.config.get("llm.self_directed", True):
+            self.toast(self.i18n.t("ui.self_off"))
+            return False
+        if self.self_pending or self.chat.active:
+            return False
+        child = agent.persona.is_child
+        choices = job_choices(child)
+        if not choices:
+            return False
+        self.self_pending = agent.key
+        agent.say("", 600.0, pending=True)
+        agent.path = []
+
+        def done(data: dict | None, error: str) -> None:
+            if self.self_pending == agent.key:
+                self.self_pending = None
+            agent.bubble = None
+            if error or not data:
+                self.toast(self.i18n.t("ui.no_reply"))
+                return
+            changed = agent.apply_self(data)
+            if not changed:
+                self.toast(self.i18n.t("ui.self_none", name=agent.name))
+                return
+            fields = ", ".join(self.i18n.t(f"field.{name}")
+                               for name in changed
+                               if self.i18n.t(f"field.{name}") != f"field.{name}")
+            self.toast(self.i18n.t("event.self", name=agent.name))
+            self.add_chronicle(
+                self.i18n.t("event.self_long", name=agent.name,
+                            fields=fields or agent.persona.job),
+                "self")
+            line = agent.persona.ambition
+            if line:
+                agent.say(line, 9.0)
+                self.voice.speak(line, agent.key, self.i18n.language)
+            self.autosave()
+
+        self.llm.submit(
+            "self", prompts.self_system(agent.persona, self.i18n.language),
+            prompts.self_user(agent.persona, self._prompt_ctx(agent), choices,
+                              child),
+            done, max_tokens=340, temperature=0.95, use_cache=False)
+        return True
+
+    def _maybe_self_direction(self, dt: float) -> None:
+        """Villagers occasionally decide for themselves who to become."""
+        if not self.config.get("llm.self_directed", True):
+            return
+        if not self.llm.available or self.llm.provider == "mock":
+            return
+        if self.self_pending or self.chat.active or self.show_chronicle:
+            return
+        self._self_timer -= dt
+        if self._self_timer > 0:
+            return
+        self._self_timer = float(self.config.get("llm.self_interval_s", 180) or 180)
+        candidates = [a for a in self.agents if not a.persona.authored]
+        if not candidates:
+            return
+        self.request_self(self.rng.choice(candidates))
+
     # -- visitors --------------------------------------------------------
     def _active_visitor(self) -> Visitor | None:
         for v in self.visitors:
@@ -630,12 +705,55 @@ class VillageApp:
                                 "dispatch_id": m.dispatch_id}
                                for m in a.memory.entries[-20:]],
                     "x": a.x, "y": a.y,
+                    "persona": {
+                        "job": a.persona.job,
+                        "work": a.persona.work,
+                        "ambition": a.persona.ambition,
+                        "bio": a.persona.bio,
+                        "quirk": a.persona.quirk,
+                        "dream_job": a.persona.dream_job,
+                        "authored": a.persona.authored,
+                        "hat": a.persona.look.hat,
+                        "outfit": a.persona.look.cloth,
+                    },
                 } for a in self.agents
             },
             "chronicle": self.chronicle[-180:],
             "diaries": dict(self.diaries),
             "visitors_today": self.visitors_today,
         }
+
+    def _apply_persona_save(self, agent: Agent, data: dict) -> None:
+        """Restore a self-authored identity without trusting the save blindly."""
+        if not isinstance(data, dict) or not data:
+            return
+        p = agent.persona
+        for field_name, limit in (("ambition", 120), ("bio", 240), ("quirk", 90)):
+            value = " ".join(str(data.get(field_name, "")).split())[:limit]
+            if value:
+                setattr(p, field_name, value)
+        if p.is_child:
+            dream = str(data.get("dream_job", "")).strip().lower()
+            if dream in JOBS and not JOBS[dream].child:
+                p.dream_job = dream
+        else:
+            job = str(data.get("job", "")).strip().lower()
+            if job in JOBS and not JOBS[job].child:
+                agent.set_job(job)
+            else:
+                work = str(data.get("work", ""))
+                if work in agent.world.points:
+                    p.work = work
+        hat = str(data.get("hat", "")).strip().lower()
+        if hat in ("", "straw", "cap", "hood"):
+            p.look.hat = hat
+        try:
+            outfit = int(data.get("outfit", p.look.cloth))
+        except (TypeError, ValueError):
+            outfit = p.look.cloth
+        if 0 <= outfit <= 7:
+            p.look.cloth = outfit
+        p.authored = bool(data.get("authored", True))
 
     def _apply_save(self, data: dict) -> None:
         try:
@@ -680,6 +798,7 @@ class VillageApp:
                     agent.state = "idle"
                     agent.block = ""
                     agent.path = []
+                self._apply_persona_save(agent, adata.get("persona") or {})
             self.chronicle = list(data.get("chronicle", self.chronicle))[-260:]
             self.diaries = dict(data.get("diaries", {}))
             lang = data.get("language")
@@ -738,6 +857,7 @@ class VillageApp:
         if dt > 0:
             self._check_visitor_schedule()
             self._maybe_social(frame_dt)
+            self._maybe_self_direction(frame_dt)
             self._tick_script()
         self._check_day()
         for toast in list(self.toasts):
@@ -794,6 +914,12 @@ class VillageApp:
                 pass
         elif action == "talk":
             self.open_chat()
+        elif action == "self":
+            self.request_self()
+        elif action == "jobs":
+            self.show_jobs = not self.show_jobs
+        elif action == "close_jobs":
+            self.show_jobs = False
         elif action == "send":
             self.submit_chat()
         elif action == "close_chat":
@@ -836,6 +962,11 @@ class VillageApp:
                 self.chat.input += e.unicode
             return
 
+        if self.show_jobs:
+            if e.key in (pygame.K_ESCAPE, pygame.K_j):
+                self.show_jobs = False
+            return
+
         if self.show_chronicle:
             if e.key in (pygame.K_ESCAPE, pygame.K_c):
                 self.show_chronicle = False
@@ -853,6 +984,10 @@ class VillageApp:
                 self.setup_dismissed = True
         elif e.key == pygame.K_t:
             self.open_chat()
+        elif e.key == pygame.K_r:
+            self._action("self")
+        elif e.key == pygame.K_j:
+            self._action("jobs")
         elif e.key == pygame.K_c:
             self.show_chronicle = True
             self.ui.chronicle_scroll = 0
@@ -910,6 +1045,9 @@ class VillageApp:
                 self._action(action)
                 self._press_world = False
                 return
+            if self.show_jobs:
+                self.show_jobs = False
+                return
             if self.show_chronicle:
                 self.show_chronicle = False
                 return
@@ -919,6 +1057,8 @@ class VillageApp:
         elif e.button == 3:
             if self.chat.active:
                 self.close_chat()
+            elif self.show_jobs:
+                self.show_jobs = False
             elif self.show_chronicle:
                 self.show_chronicle = False
             else:
@@ -972,7 +1112,7 @@ class VillageApp:
                     self._drag_last = e.pos
 
         keys = pygame.key.get_pressed()
-        if not self.chat.active and not self.show_chronicle:
+        if not self.chat.active and not self.show_chronicle and not self.show_jobs:
             step = 260.0 * (1 / 60.0)
             dx = (keys[pygame.K_d] or keys[pygame.K_RIGHT]) - \
                  (keys[pygame.K_a] or keys[pygame.K_LEFT])

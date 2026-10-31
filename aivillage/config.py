@@ -28,6 +28,9 @@ DEFAULTS: dict[str, Any] = {
         "window_height": 810,
         "zoom": 3,
         "seed": 1234,
+        "save_slot": 1,
+        "photo_mode": False,
+        "seasonal_palette": True,
     },
     "reality": {
         "time_mode": "live",
@@ -47,6 +50,13 @@ DEFAULTS: dict[str, Any] = {
         "max_tokens": 300,
         "timeout_s": 60,
         "ambient_dialogue": True,
+        "self_directed": True,
+        "self_interval_s": 180,
+        "cli_model": "",
+        "cli_timeout_s": 120,
+        "claude_command": "claude",
+        "codex_command": "codex",
+        "prefer_subscription": False,
     },
     "voice": {
         "enabled": True,
@@ -57,12 +67,20 @@ DEFAULTS: dict[str, Any] = {
     "social": {
         "ambient_budget_s": 20,
         "work_chatter": False,
+        "group_chats": True,
+        "group_chance": 0.35,
+        "threads": True,
     },
     "news": {
         "enabled": True,
         "poll_minutes": 40,
         "max_dispatches_per_day": 2,
         "tone": "neutral",
+        "mute_after_failures": 5,
+        "backoff_base_s": 300,
+        "backoff_max_s": 21600,
+        "alerts_enabled": True,
+        "alert_poll_minutes": 20,
         "weights": {
             "world": 0.40,
             "odd": 0.15,
@@ -79,7 +97,8 @@ DEFAULTS: dict[str, Any] = {
     },
 }
 
-PROVIDERS = ("auto", "ollama", "openai", "anthropic", "openai_compatible", "mock", "none")
+PROVIDERS = ("auto", "ollama", "openai", "anthropic", "openai_compatible",
+             "claude_cli", "codex_cli", "subscription", "mock", "none")
 
 
 def _deep_merge(base: dict, override: dict) -> dict:
