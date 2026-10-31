@@ -9,6 +9,7 @@ from aivillage.agents.roster import BY_KEY, ROSTER
 from aivillage.llm import prompts
 from aivillage.llm.client import Job
 from aivillage.world.mapgen import World
+from aivillage.world.pathfinding import astar
 
 
 def test_jobs_registry_is_consistent():
@@ -24,6 +25,27 @@ def test_jobs_registry_is_consistent():
     assert job_for("child").child
     assert job_choices(True)[0]["key"] == "child"
     assert all(c["key"] != "child" for c in job_choices(False))
+
+
+def test_resource_jobs_have_workers_homes_and_reachable_sites():
+    world = World(1234)
+    expected = {"shepherd": "pasture", "woodcutter": "woodlot",
+                "miner": "quarry", "beekeeper": "apiary"}
+    for job_key, site in expected.items():
+        job = JOBS[job_key]
+        assert job.work == site
+        assert job.resource and job.amount > 0
+        workers = [p for p in ROSTER if p.job == job_key]
+        assert len(workers) == 1, job_key
+        worker = workers[0]
+        assert not worker.is_child
+        home = world.points.get(f"home_{worker.home}")
+        point = world.points.get(site)
+        assert home and point, job_key
+        start = (home[0] // 16, home[1] // 16)
+        goal = (point[0] // 16, point[1] // 16)
+        assert world.is_walkable(*goal), job_key
+        assert astar(start, goal, world.is_walkable), job_key
 
 
 def test_roster_has_children_with_living_parents():

@@ -196,6 +196,73 @@ def fence() -> pygame.Surface:
 
 
 @lru_cache(maxsize=8)
+def sheep(seed: int = 0) -> pygame.Surface:
+    """A small woolly sheep, facing right."""
+    rng = random.Random(7500 + seed)
+    s = surf(20, 16)
+    pygame.draw.ellipse(s, P["shadow"], (1, 11, 18, 4))
+    pygame.draw.rect(s, P["ink_soft"], (4, 10, 2, 5))
+    pygame.draw.rect(s, P["ink_soft"], (13, 10, 2, 5))
+    pygame.draw.ellipse(s, P["cream"], (1, 3, 16, 10))
+    dither(s, (2, 4, 14, 8), P["white"], 0.28, rng)
+    dither(s, (2, 4, 14, 8), P["ui_dim"], 0.08, rng)
+    pygame.draw.ellipse(s, P["ink_soft"], (13, 4, 6, 6))
+    pygame.draw.rect(s, P["ink_soft"], (12, 3, 2, 3))
+    pygame.draw.rect(s, P["cream"], (11, 1, 3, 2))
+    s.set_at((16, 6), P["white"])
+    return s
+
+
+@lru_cache(maxsize=8)
+def beehive() -> pygame.Surface:
+    """A straw skep on a wooden stand, with a few bees around it."""
+    s = surf(16, 20)
+    pygame.draw.ellipse(s, P["shadow"], (1, 16, 14, 4))
+    pygame.draw.rect(s, P["wood_d"], (3, 15, 2, 4))
+    pygame.draw.rect(s, P["wood_d"], (11, 15, 2, 4))
+    pygame.draw.rect(s, P["wood"], (2, 12, 12, 3))
+    pygame.draw.ellipse(s, (198, 158, 84), (2, 2, 12, 12))
+    pygame.draw.ellipse(s, (176, 134, 66), (2, 8, 12, 6))
+    for y in (5, 8, 11):
+        pygame.draw.arc(s, P["wood_d"], (3, y - 1, 10, 5), 0.15, 2.9, 1)
+    pygame.draw.rect(s, P["ink_soft"], (6, 8, 4, 3))
+    pygame.draw.rect(s, P["wood_d"], (1, 14, 14, 1))
+    for x, y in ((13, 3), (15, 6), (1, 5)):
+        s.set_at((x, y), P["window_d"])
+    return s
+
+
+@lru_cache(maxsize=8)
+def log_pile() -> pygame.Surface:
+    """Stacked cordwood: three logs on the bottom, two on top."""
+    s = surf(24, 16)
+    pygame.draw.ellipse(s, P["shadow"], (1, 12, 22, 4))
+    logs = [(2, 9), (9, 9), (16, 9), (5, 4), (12, 4)]
+    for i, (x, y) in enumerate(logs):
+        pygame.draw.rect(s, P["wood_d"], (x - 1, y, 8, 7), border_radius=3)
+        pygame.draw.ellipse(s, P["wood"], (x, y + 1, 7, 6))
+        pygame.draw.ellipse(s, P["wood_l"], (x + 1, y + 2, 4, 3))
+        pygame.draw.ellipse(s, P["wood_d"], (x + 2, y + 3, 2, 2))
+    return s
+
+
+@lru_cache(maxsize=32)
+def boulder(seed: int = 0) -> pygame.Surface:
+    """A chunky quarry stone with a chipped face."""
+    rng = random.Random(7800 + seed)
+    s = surf(22, 16)
+    pygame.draw.ellipse(s, P["shadow"], (1, 11, 20, 5))
+    pygame.draw.polygon(s, P["slate"], [(2, 13), (1, 8), (5, 3), (15, 2),
+                                        (20, 7), (19, 13)])
+    pygame.draw.polygon(s, P["stone"], [(3, 12), (2, 8), (6, 4), (14, 3),
+                                        (18, 7), (17, 12)])
+    dither(s, (5, 5, 11, 7), P["stone_l"], 0.30, rng)
+    pygame.draw.line(s, P["stone_d"], (10, 4), (9, 9))
+    pygame.draw.line(s, P["stone_d"], (9, 9), (13, 11))
+    return s
+
+
+@lru_cache(maxsize=8)
 def lamp(on: bool = True) -> pygame.Surface:
     s = surf(16, 34)
     pygame.draw.rect(s, P["ink_soft"], (7, 8, 2, 26))
@@ -571,6 +638,24 @@ def villager_with_tool(sprite: pygame.Surface, tool: str) -> pygame.Surface:
     elif tool == "basket":
         pygame.draw.ellipse(out, P["wood"], (9, 12, 7, 5))
         pygame.draw.ellipse(out, P["wood_d"], (9, 12, 7, 5), 1)
+    elif tool == "staff":
+        pygame.draw.line(out, P["wood"], (12, 3), (12, 15))
+        pygame.draw.arc(out, P["wood_l"], (8, 0, 9, 8), 0.2, 3.0, 2)
+    elif tool == "axe":
+        pygame.draw.rect(out, P["wood"], (12, 5, 2, 11))
+        pygame.draw.polygon(out, P["stone_l"],
+                            [(10, 3), (16, 4), (15, 8), (10, 7)])
+        pygame.draw.line(out, P["stone_d"], (10, 7), (15, 8))
+    elif tool == "pick":
+        pygame.draw.rect(out, P["wood"], (12, 4, 2, 12))
+        pygame.draw.line(out, P["stone_l"], (8, 4), (17, 6), 2)
+        pygame.draw.line(out, P["stone_d"], (8, 5), (17, 7))
+    elif tool == "smoker":
+        pygame.draw.rect(out, P["stone_d"], (10, 10, 6, 6))
+        pygame.draw.rect(out, P["stone"], (10, 10, 5, 5))
+        pygame.draw.rect(out, P["stone_l"], (12, 8, 2, 2))
+        pygame.draw.circle(out, P["ui_dim"], (13, 6), 1)
+        pygame.draw.circle(out, P["ui_dim"], (15, 4), 1)
     return out
 
 

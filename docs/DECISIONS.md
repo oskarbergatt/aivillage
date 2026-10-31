@@ -248,3 +248,18 @@ villager rest and broke production/construction tests.
 
 **Cost:** tests do not exercise the real-date holiday path directly; `reality/calendar.py` covers it
 with pure functions and a separate fixed date if needed.
+
+## 22. Resource trades reuse the existing economy and work points
+
+**Actual:** `shepherd`, `woodcutter`, `miner` and `beekeeper` are ordinary `Job` entries. Their yields
+are food, wood, stone and food, the same stores the older trades already fill. Each has a named world
+point (`pasture`, `woodlot`, `quarry`, `apiary`), a tool overlay and one villager with a matching
+`home_<key>` door. The map adds fences, sheep, hives, cordwood and boulders around those points.
+
+**Why:** adding a wool, honey or slate resource would touch the HUD, saves, needs and every balance
+test for little visible gain. Reusing the four existing stores keeps the economy readable and the
+v0.4 change additive: no new storage, no save migration, and the same `Agent` yield path.
+
+**Cost:** a shepherd and a beekeeper look like they produce food rather than wool and honey. If a
+future version wants distinct goods, the job registry is the only place that needs a new resource
+name, followed by `app.stats` and the HUD.

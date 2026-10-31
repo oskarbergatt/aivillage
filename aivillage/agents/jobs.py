@@ -93,6 +93,27 @@ JOBS: dict[str, Job] = {
         "musician", "plaza",
         ("tuning a pipe", "playing for the square", "teaching a child a tune"),
         "", "coin", 1.0),
+    # -- v0.4 resource trades --------------------------------------------
+    "shepherd": Job(
+        "shepherd", "pasture",
+        ("moving the flock", "checking the fence", "shearing a fleece",
+         "leading the sheep to water"),
+        "staff", "food", 2.0),
+    "woodcutter": Job(
+        "woodcutter", "woodlot",
+        ("felling a dead tree", "splitting logs", "stacking cordwood",
+         "sharpening the axe"),
+        "axe", "wood", 3.0),
+    "miner": Job(
+        "miner", "quarry",
+        ("breaking stone", "sorting rubble", "shoring a tunnel",
+         "hauling a barrow of slate"),
+        "pick", "stone", 2.5),
+    "beekeeper": Job(
+        "beekeeper", "apiary",
+        ("checking the hives", "calming the bees", "lifting a honeycomb",
+         "mending a frame"),
+        "smoker", "food", 1.5),
     "child": Job(
         "child", "school",
         ("playing tag", "skipping stones", "chasing the geese",

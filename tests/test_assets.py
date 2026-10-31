@@ -26,7 +26,8 @@ def test_villager_frames_differ_and_have_alpha():
 
 def test_tool_variants_render():
     base = sprites.villager(1, 2, 3, "bun", "", 4, 2, 0, apron=True)
-    for tool in ("hoe", "hammer", "basket", "rod", "brush"):
+    for tool in ("hoe", "hammer", "basket", "rod", "brush",
+                 "staff", "axe", "pick", "smoker"):
         out = sprites.villager_with_tool(base, tool)
         assert out.get_width() >= base.get_width()
 
@@ -79,6 +80,6 @@ def test_glow_and_lights():
 def test_all_world_sprites_exist():
     expected = ("well", "bell_post", "market_stall", "bench", "lamp", "barrel",
                 "crate", "fence", "tree", "flower_patch", "rock", "bush",
-                "crop")
+                "crop", "sheep", "beehive", "log_pile", "boulder")
     for name in expected:
         assert hasattr(sprites, name), name

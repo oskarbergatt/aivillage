@@ -1,4 +1,5 @@
-"""The villagers: eight founders, four later arrivals and three children."""
+"""The villagers: eight founders, four later arrivals, four resource workers
+and three children."""
 from __future__ import annotations
 
 from .persona import Look, Persona, Voice
@@ -170,6 +171,63 @@ ROSTER: list[Persona] = [
              "useless ones at all times."),
         quirk="cannot pass a broken object without turning it over",
         voice=Voice(rate=170, volume=0.85, hint="mark"),
+        schedule=DAY,
+    ),
+    # -- v0.4 resource trades --------------------------------------------
+    Persona(
+        key="maude", name="Maude Ash", job="shepherd", home="maude",
+        work="pasture", age=57,
+        look=Look(skin=3, hair=3, cloth=5, hair_style="bun", hat="straw",
+                  version=15, apron=True),
+        traits={"curiosity": 0.45, "sociability": 0.60, "diligence": 0.85,
+                "grumpiness": 0.35, "creativity": 0.30},
+        bio=("Keeps the village flock on the east pasture and can name every "
+             "ewe by the sound of its bell. She has strong views on fences, "
+             "dogs and people who leave gates open."),
+        quirk="counts the flock out loud and always arrives at the same number",
+        voice=Voice(rate=140, volume=0.85, hint="zira"),
+        schedule=DAY,
+    ),
+    Persona(
+        key="ivo", name="Ivo Thrum", job="beekeeper", home="ivo", work="apiary",
+        age=44,
+        look=Look(skin=4, hair=0, cloth=3, hair_style="short", hat="hood",
+                  version=16, beard=True),
+        traits={"curiosity": 0.75, "sociability": 0.35, "diligence": 0.70,
+                "grumpiness": 0.25, "creativity": 0.50},
+        bio=("Tends the hives behind the east lane. Speaks softly, moves slowly "
+             "and has never been stung on a day he expected to be. Sells honey "
+             "to the tavern and advice to anyone who stands still."),
+        quirk="apologises to the bees before opening a hive",
+        voice=Voice(rate=135, volume=0.6, hint="david"),
+        schedule=DAY,
+    ),
+    Persona(
+        key="greta", name="Greta Fenn", job="woodcutter", home="greta",
+        work="woodlot", age=31,
+        look=Look(skin=2, hair=5, cloth=6, hair_style="wild", hat="cap",
+                  version=17),
+        traits={"curiosity": 0.40, "sociability": 0.55, "diligence": 0.95,
+                "grumpiness": 0.45, "creativity": 0.35},
+        bio=("Works the south woodlot with a borrowed axe and an unborrowed "
+             "opinion about how it should be swung. Fells, splits and stacks "
+             "all day, then beats the smith at arm wrestling on Sundays."),
+        quirk="judges every tree by how well it will burn",
+        voice=Voice(rate=165, volume=0.95, hint="mark"),
+        schedule=DAY,
+    ),
+    Persona(
+        key="corin", name="Corin Slate", job="miner", home="corin",
+        work="quarry", age=38,
+        look=Look(skin=1, hair=4, cloth=7, hair_style="short", hat="cap",
+                  version=18, beard=True),
+        traits={"curiosity": 0.50, "sociability": 0.30, "diligence": 0.90,
+                "grumpiness": 0.65, "creativity": 0.25},
+        bio=("Runs the little quarry at the west edge of the village. Comes "
+             "back grey with dust, says the stone talks if you listen, and "
+             "has never once been convinced to take a day off."),
+        quirk="taps every wall twice before trusting it",
+        voice=Voice(rate=145, volume=0.9, hint="david"),
         schedule=DAY,
     ),
     # -- v0.3 kids -------------------------------------------------------

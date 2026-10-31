@@ -3,7 +3,7 @@
 Living checklist. Update it when a milestone lands or a gap closes.
 Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md)
 
-**Last updated:** 2026-10-31 · **Tests:** 81 passed (`pytest -q`) · **Version:** 0.3.0
+**Last updated:** 2026-10-31 · **Tests:** 82 passed (`pytest -q`) · **Version:** 0.4.0
 
 ---
 
@@ -13,7 +13,7 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
       python-dotenv, pyttsx3, pytest
 - [x] Native window (default 1440×810, min 960×600, resizable) + integer camera zoom 2–5
 - [x] Main loop, event handling, clamped timestep, camera pan/zoom/follow
-- [x] Seeded 64×48 world, tiles, paths, pond, props, 12 houses, school, windmill, workshop, tavern,
+- [x] Seeded 64×48 world, tiles, paths, pond, props, 16 houses, school, windmill, workshop, tavern,
       town-hall site
 - [x] Procedural pixel art and OFL fonts (Silkscreen, Press Start 2P, licence files bundled)
 - [x] HUD shell: day/season, clock, weather, resources, speed, language, save, traveller
@@ -25,9 +25,11 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 
 ## M2 — Villagers at work ✅
 
-- [x] Fifteen villagers: twelve adults with traits, bios, looks, voices and schedules, plus three
+- [x] Nineteen villagers: sixteen adults with traits, bios, looks, voices and schedules, plus three
       children (Nettle, Jory, Pella) who live with their parents
-- [x] Sixteen adult trades in a job registry (`agents/jobs.py`) plus the `child` role
+- [x] Twenty adult trades in a job registry (`agents/jobs.py`) plus the `child` role
+- [x] Resource trades: Maude the shepherd, Ivo the beekeeper, Greta the woodcutter and Corin the
+      miner, each with a home, tool, work site and visible props (sheep, hives, cordwood, boulders)
 - [x] Walk cycles, facing, name tags, shadows, selection; smaller child sprites and shadows
 - [x] A* pathfinding, retargeting to walkable tiles, soft avoidance
 - [x] Schedule blocks → intent → state machine; survival overrides (nap, eat)
@@ -89,7 +91,7 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 - [x] Night lighting, warm window pools, lamp glow, additive light overlay
 - [x] Toasts, chronicle panel, dispatch card, setup card, chat panel, jobs panel
 - [x] Real holiday/festival calendar, Saturday market/Monday routines, forecast-aware work planning
-- [x] 81 automated tests (world, assets, reality, news, pipeline, app, jobs/self, LLM CLIs)
+- [x] 82 automated tests (world, assets, reality, news, pipeline, app, jobs/self, LLM CLIs)
 - [ ] Save slots module (`save.py`) exists but the HUD still saves/loads slot 1 only
 - [ ] Persistent dialogue threads and group chats exist as prompt/memory helpers, not yet in the
       ambient scheduler
@@ -103,7 +105,8 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 
 | Date | Check | Result |
 |---|---|---|
-| 2026-10-31 | `pytest -q` | **81 passed**, 6 deprecation warnings (`pygame.image.tostring`) |
+| 2026-10-31 | `pytest -q` | **82 passed**, 6 deprecation warnings (`pygame.image.tostring`) |
+| 2026-10-31 | v0.4 resource trades | 4 jobs, 4 workers, 4 homes and 4 walkable sites; each site reachable from its worker's door (automated) |
 | 2026-10-31 | Subscription CLI probe | `claude 2.1.308`, `codex-cli 0.156.1` found; `claude -p` blocked by a Claude account card-verification error |
 | 2026-10-30 | Headless launch, `--provider mock`, screenshot | frame rendered, 92 sampled colours, HUD bands drawn |
 | 2026-10-30 | Day vs night render | night luminance < 85 % of day (automated) |

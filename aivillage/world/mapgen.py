@@ -159,6 +159,11 @@ class World:
             ("fen", 51, 8, 4, 3, "roof_blue", False),
             ("mira", 6, 33, 4, 3, "roof_plum", True),
             ("tobin", 34, 38, 4, 3, "roof_red", True),
+            # v0.4 resource trades
+            ("maude", 57, 9, 4, 3, "roof_green", False),
+            ("ivo", 57, 17, 4, 3, "roof_ochre", False),
+            ("greta", 53, 41, 4, 3, "roof_plum", False),
+            ("corin", 8, 39, 4, 3, "roof_blue", False),
         ]
         for i, (name, tx, ty, w, h, roof, shop) in enumerate(layout):
             obj = make_house_obj(name, tx, ty, w, h, roof, seed=i * 7 + self.seed,
@@ -217,6 +222,58 @@ class World:
         for y in range(25, 28):
             self.add(Obj("fence", 9 * 16, y * 16 + 2, sprites.fence(), solid=False,
                          sort_y=y * 16 + 16))
+
+        # -- v0.4 resource work sites ------------------------------------
+        # East lane: both east houses and the apiary/pasture open onto it.
+        self.carve_path(59, 12, 62, 12)
+        self.carve_path(62, 12, 62, 27)
+        self.carve_path(59, 20, 62, 20)
+        self.carve_path(62, 20, 62, 22)
+        self.carve_path(62, 22, 59, 22)
+        self.carve_path(62, 27, 59, 27)
+
+        self.points["pasture"] = self.tile_center(59, 27)
+        self.points["apiary"] = self.tile_center(59, 22)
+
+        # A fenced pasture with sheep; the fence and sheep stay non-solid so
+        # the shepherd can walk to the middle of her flock.
+        for x in range(55, 63):
+            for y in (26, 29):
+                self.add(Obj("fence", x * 16, y * 16 + 2, sprites.fence(),
+                             solid=False, sort_y=y * 16 + 16))
+        for y in range(27, 29):
+            for x in (55, 62):
+                self.add(Obj("fence", x * 16, y * 16 + 2, sprites.fence(),
+                             solid=False, sort_y=y * 16 + 16))
+        for i, (tx, ty) in enumerate([(57, 27), (61, 28), (58, 28), (60, 28)]):
+            ewe = sprites.sheep(i)
+            self.add(Obj("sheep", tx * 16 - 2, ty * 16 + 16 - ewe.get_height(),
+                         ewe, solid=False, sort_y=ty * 16 + 16))
+
+        # Hives around the apiary point. Solid, but the work point is clear.
+        for tx, ty in ((57, 21), (61, 21), (57, 23), (61, 23)):
+            hive = sprites.beehive()
+            self.add(Obj("beehive", tx * 16 + 2, ty * 16 + 16 - hive.get_height(),
+                         hive, solid=True, sort_y=ty * 16 + 16))
+
+        # South woodlot, with stacked cordwood beside the splitting ground.
+        self.carve_path(55, 44, 60, 44)
+        self.carve_path(60, 44, 60, 42)
+        self.points["woodlot"] = self.tile_center(60, 42)
+        for i, (tx, ty) in enumerate([(62, 41), (61, 44)]):
+            pile = sprites.log_pile()
+            self.add(Obj("logs", tx * 16 - 4, ty * 16 + 16 - pile.get_height(),
+                         pile, solid=True, sort_y=ty * 16 + 16))
+
+        # West quarry, ringed by boulders with a short barrow track.
+        self.carve_path(10, 42, 4, 42)
+        self.carve_path(4, 42, 4, 44)
+        self.points["quarry"] = self.tile_center(4, 42)
+        for i, (tx, ty) in enumerate([(1, 41), (2, 44), (6, 44), (3, 39),
+                                      (5, 40)]):
+            stone = sprites.boulder(i)
+            self.add(Obj("boulder", tx * 16 - 3, ty * 16 + 16 - stone.get_height(),
+                         stone, solid=True, sort_y=ty * 16 + 16))
 
         # nature
         self._scatter_trees()

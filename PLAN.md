@@ -1,6 +1,6 @@
 # aivillage — Master Build Plan
 
-> **Status: IMPLEMENTED (v0.3 — jobs, children and self-authored villagers)** · Last updated: 2026-10-31
+> **Status: IMPLEMENTED (v0.4 — resource trades)** · Last updated: 2026-10-31
 > Target: `C:\Users\Oskar\Documents\aivillage`
 > This file is the source of truth for the project. The original planning copy lives at
 > `C:\Users\Oskar\.opencode\plan\aivillage.md`; this repo copy is now authoritative.
@@ -8,7 +8,7 @@
 > and tracked in [`PROGRESS.md`](PROGRESS.md).
 
 **Vision:** a desktop pixel-art village that runs on the player's real clock, real weather and real
-news, inhabited by fifteen AI villagers — twelve working adults and three children — who work their
+news, inhabited by nineteen AI villagers — sixteen working adults and three children — who work their
 jobs, socialise in their free time, receive travelling strangers carrying adapted real-world
 headlines, and, with a real model, decide for themselves who they want to become.
 
@@ -24,8 +24,9 @@ headlines, and, with a real model, decide for themselves who they want to become
 | Open-Meteo weather, 15-min refresh, cache, seasonal fallback | ✅ done | `aivillage/reality/weather.py` |
 | 64×48 procedural map, houses, farm, pond, school, windmill, workshop, tavern, town-hall site | ✅ done | `aivillage/world/` |
 | Procedural pixel art (tiles, villagers, houses, props, night variants) | ✅ done | `aivillage/assets/sprites.py` |
-| Fifteen villagers (12 adults + 3 children), traits, needs, schedules, A* movement | ✅ done | `aivillage/agents/` |
-| Job registry: 16 adult trades + child role, task/tool/yield definitions | ✅ done | `aivillage/agents/jobs.py` |
+| Nineteen villagers (16 adults + 3 children), traits, needs, schedules, A* movement | ✅ done | `aivillage/agents/` |
+| Job registry: 20 adult trades + child role, task/tool/yield definitions | ✅ done | `aivillage/agents/jobs.py` |
+| Resource trades: shepherd, woodcutter, miner, beekeeper with homes, sites and props | ✅ done | `agents/roster.py`, `world/mapgen.py` |
 | Kids: school/play timetable, smaller sprites, parents, dream jobs, no resource yield | ✅ done | `aivillage/agents/roster.py`, `brain.py` |
 | Jobs, farm cycle, resources, town-hall construction, chronicle | ✅ done | `aivillage/agents/brain.py`, `aivillage/app.py` |
 | Sunday rest, weather-aware work breaks, night folk schedules | ✅ done | `aivillage/agents/brain.py`, `roster.py` |
@@ -274,7 +275,7 @@ weather VFX, holidays, particles, tests, README with screenshots.
 Launch for real; day + night screenshots reviewed; click villager and verify inspector/task;
 real chat round-trip; confirm UI never blocks on network; pytest green.
 
-**Current verification:** pytest 81 passed; headless launches with `--provider mock` produce a
+**Current verification:** pytest 82 passed; headless launches with `--provider mock` produce a
 rendered frame; day/night renders verified by luminance assertion in `tests/test_app.py`. The
 subscription CLIs are installed and unit-tested, but `claude -p` returned an account card-verification
 error in the build environment and Codex was not exercised with a real prompt. A real desktop launch
@@ -344,3 +345,23 @@ their own character.**
 Acceptance: `pytest -q` green (81 passed); no villager can acquire an unknown job or invalid look
 from a model; mock mode remains deterministic; subscription failures surface in the HUD/status.
 Known blocker: live subscription verification (Claude account card check) was not possible here.
+
+## 21. v0.4 — four more resource trades
+
+Scope chosen by the user: **new resource jobs, each with a villager and a visible work site.**
+
+1. **Jobs** — `shepherd`, `woodcutter`, `miner` and `beekeeper` join the registry, bringing it to
+   20 adult trades. Their tools (`staff`, `axe`, `pick`, `smoker`) are drawn as sprite overlays.
+2. **Villagers** — Maude Ash (shepherd), Ivo Thrum (beekeeper), Greta Fenn (woodcutter) and Corin
+   Slate (miner) arrive with their own houses, looks, voices, traits, bios and quirks, raising the
+   roster to 16 adults + 3 children.
+3. **World** — four new houses on the east and south edges, a fenced east pasture with sheep, an
+   apiary ringed by hives, a south woodlot with stacked cordwood, and a west quarry of boulders.
+   Footpaths connect each site to its worker's door and the existing lanes.
+4. **Economy** — the new trades feed the existing stores rather than adding a new resource:
+   shepherd and beekeeper produce food, woodcutter produces wood, miner produces stone.
+5. **Tests/docs** — world landmark/home coverage, a reachability test for every new job, sprite and
+   tool checks; README, PLAN, PROGRESS, DECISIONS and version 0.4.0.
+
+Acceptance: `pytest -q` green (82 passed); each new trade has exactly one adult worker, a home door
+and a walkable work site reachable from that door; no new resource storage or save migration needed.

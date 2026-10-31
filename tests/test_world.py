@@ -19,7 +19,7 @@ def test_landmarks_are_walkable_or_reachable():
     world = World(1234)
     needed = ("plaza", "farm", "pond", "workshop", "market_front", "road",
               "tavern_door", "woods_west", "woods_east", "buildsite",
-              "school", "mill")
+              "school", "mill", "pasture", "apiary", "woodlot", "quarry")
     for name in needed:
         assert name in world.points, name
         px, py = world.points[name]
@@ -31,7 +31,8 @@ def test_landmarks_are_walkable_or_reachable():
 def test_every_home_has_a_door_point():
     world = World(1234)
     for name in ("pip", "orin", "marrow", "bram", "wisp", "hazel", "sable",
-                 "nim", "tavern", "june", "fen", "mira", "tobin"):
+                 "nim", "tavern", "june", "fen", "mira", "tobin",
+                 "maude", "ivo", "greta", "corin"):
         point = world.points.get(f"home_{name}")
         assert point is not None
         assert world.is_walkable(point[0] // 16, point[1] // 16)
