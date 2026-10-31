@@ -71,7 +71,8 @@ failure_backoff_max_s = 900 # maximum retry delay
 work_chatter     = false   # tiny one-liners during work hours
 group_chats      = true    # allow ambient group conversations
 group_chance     = 0.35
-threads          = true    # include saved player chat history in prompts
+threads          = true    # include saved player and villager conversation histories
+story_arcs       = true    # allow the LLM to develop a saved story on a new day
 
 [news]
 enabled  = true

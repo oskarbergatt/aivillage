@@ -163,6 +163,9 @@ not subject to that retry delay. `llm.cache_entries` limits the in-memory cache 
 requests (set it to `0` to disable caching). See `config.example.toml` for retry settings.
 With conversation threads enabled in F3, delivered lines are saved per pair of villagers and recent
 lines are included in future pair and group prompts. Each thread retains at most 24 lines.
+At a new in-game day, a real model can continue a saved village story using recent chronicle events;
+the current story is included as background in conversations. Turn this off with
+`social.story_arcs = false`. It makes an additional model request per day and may incur charges.
 Up to three independent villager conversations can overlap, with sequential turns within each
 conversation and separate Windows SAPI playback. Two background model requests may run at once,
 which can increase provider usage or local model load. Under

@@ -78,6 +78,7 @@ DEFAULTS: dict[str, Any] = {
         "group_chats": True,
         "group_chance": 0.35,
         "threads": True,
+        "story_arcs": True,
     },
     "news": {
         "enabled": True,

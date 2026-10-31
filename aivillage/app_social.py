@@ -260,6 +260,7 @@ class VillageSocialMixin:
         self.dispatch_card = None
         self.add_chronicle(self.i18n.t("event.newday", day=self.day_number), "day")
         self._request_diary(previous)
+        self._request_story_arc(key, [e["text"] for e in self.chronicle if e.get("key") == previous])
         self.toast(self.i18n.t("event.newday", day=self.day_number))
         self.autosave()
 

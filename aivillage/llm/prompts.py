@@ -124,6 +124,7 @@ def exchange_user(a: Persona, b: Persona, ctx: dict, topic: str = "") -> str:
         f"They feel about each other: {ctx.get('relation', 'acquainted')}.\n"
         f"Things they recently said: {'; '.join(ctx.get('social_history', [])[-8:]) or 'nothing yet'}.\n"
         f"Shared news on their minds: {topic or 'nothing in particular'}.\n"
+        f"Ongoing village story (background only): {ctx.get('story_arc', '') or 'none'}.\n"
         'Return JSON only: {"lines": [{"speaker": "a", "text": "..."}, '
         '{"speaker": "b", "text": "..."}]}'
     )
@@ -152,6 +153,7 @@ def group_user(members: list[Persona], ctx: dict, topic: str = "",
         f"Gathered here: {names}.\n{card}\n"
         f"Shared conversation history: {'; '.join(ctx.get('social_history', [])[-8:]) or 'none yet'}.\n"
         f"What is on their minds: {topic or 'the day, the weather, the village'}.\n"
+        f"Ongoing village story (background only): {ctx.get('story_arc', '') or 'none'}.\n"
         'Return JSON only: {"lines": [{"speaker": "exact name", "text": "..."}]}'
     )
 

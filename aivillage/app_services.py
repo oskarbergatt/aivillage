@@ -166,6 +166,8 @@ class VillageServicesMixin:
                       f"{int(self.stats['stone'])}, food {int(self.stats['food'])}"),
             "place": loc.label,
         }
+        if self.config.get("social.story_arcs", True) and self.story_arc:
+            ctx["story_arc"] = self.story_arc.get("summary", "")
         if agent is not None:
             rels = []
             for key, value in sorted(agent.memory.affinity.items(),

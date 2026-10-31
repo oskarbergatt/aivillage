@@ -54,6 +54,7 @@ class VillagePersistenceMixin:
             },
             "chronicle": self.chronicle[-180:],
             "diaries": dict(self.diaries),
+            "story_arc": dict(self.story_arc),
             "visitors_today": self.visitors_today,
         }
 
@@ -148,6 +149,12 @@ class VillagePersistenceMixin:
                 self._apply_persona_save(agent, adata.get("persona") or {})
             self.chronicle = list(data.get("chronicle", self.chronicle))[-260:]
             self.diaries = dict(data.get("diaries", {}))
+            arc = data.get("story_arc", {})
+            self.story_arc = {key: str(arc.get(key, ""))[:limit]
+                              for key, limit in (("day", 10), ("title", 100),
+                                                 ("summary", 320), ("open_question", 180))} if isinstance(arc, dict) and arc else {}
+            self._story_generation += 1
+            self._story_pending = ""
             lang = data.get("language")
             if lang in ("en", "de"):
                 self.i18n.set_language(lang)

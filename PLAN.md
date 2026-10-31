@@ -273,7 +273,7 @@ weather VFX, holidays, particles, tests, README with screenshots.
 Launch for real; day + night screenshots reviewed; click villager and verify inspector/task;
 real chat round-trip; confirm UI never blocks on network; pytest green.
 
-**Current verification:** pytest 158 passed, 1 skipped; headless launches with `--provider mock` produce a
+**Current verification:** pytest 163 passed, 1 skipped; headless launches with `--provider mock` produce a
 rendered frame; day/night renders verified by luminance assertion in `tests/test_app.py`. The
 subscription CLIs are installed and unit-tested, but `claude -p` returned an account card-verification
 error in the build environment and Codex was not exercised with a real prompt. A real desktop launch

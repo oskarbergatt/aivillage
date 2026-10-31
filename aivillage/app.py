@@ -53,9 +53,10 @@ from .app_loop import VillageLoopMixin
 from .ambient_setup import AmbientModelSetupMixin
 from .social_tracks import SocialTracksMixin
 from .gateway_setup import GatewaySetupMixin
+from .story_arcs import StoryArcsMixin
 
 
-class VillageApp(ChatMixin, AlertCourierMixin, PhotoExportMixin, VillageServicesMixin, VisitorsMixin, VillageSocialMixin, VillagePersistenceMixin, VillageControlsMixin, VillageLoopMixin, AmbientModelSetupMixin, SocialTracksMixin, GatewaySetupMixin):
+class VillageApp(ChatMixin, AlertCourierMixin, PhotoExportMixin, VillageServicesMixin, VisitorsMixin, VillageSocialMixin, VillagePersistenceMixin, VillageControlsMixin, VillageLoopMixin, AmbientModelSetupMixin, SocialTracksMixin, GatewaySetupMixin, StoryArcsMixin):
     def __init__(self, config, new_game: bool = False, seed: int | None = None):
         pygame.mixer.pre_init(22050, -16, 2, 512)
         pygame.init()
@@ -136,6 +137,9 @@ class VillageApp(ChatMixin, AlertCourierMixin, PhotoExportMixin, VillageServices
         self.stats = {"wood": 14, "stone": 6, "food": 22, "coin": 7}
         self.chronicle: list[dict] = []
         self.diaries: dict[str, str] = {}
+        self.story_arc = {}
+        self._story_pending = ""
+        self._story_generation = 0
         self.day_number = 1
         self.current_day_key = self.clock.now.strftime("%Y-%m-%d")
         self.visitors: list[Visitor] = []
