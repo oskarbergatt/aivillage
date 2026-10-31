@@ -13,6 +13,5 @@ save games, generated builds, or private data. `.env.example` and `config.exampl
 templates, not places for credentials. Windows SAPI, external model providers, and native installers
 require separate platform-specific testing.
 
-The repository does not yet specify a project license; ask the repository owner before relying on
-permission to redistribute or contribute under a particular license. Bundled fonts have their own
-licenses in `aivillage/assets/fonts/`.
+The project license is in [`LICENSE`](LICENSE). Bundled fonts have their own licenses in
+`aivillage/assets/fonts/`.
