@@ -24,7 +24,7 @@ class DialogsMixin:
         self._panel(screen, rect, fill=(32, 28, 42))
         agent = app.agent_by_key.get(chat.target or "")
         name = agent.name if agent else "—"
-        draw_text(screen, f"You · {name}", (rect.x + 16, rect.y + 10), 16,
+        draw_text(screen, f"{t('ui.you')} · {name}", (rect.x + 16, rect.y + 10), 16,
                   P["ui_accent"], chunky=True)
         self._button(screen, pygame.Rect(rect.right - 38, rect.y + 8, 24, 24),
                      "x", "close_chat")
@@ -35,8 +35,8 @@ class DialogsMixin:
         y = body.y + 8
         lines = chat.lines[-7:]
         for speaker, text in lines:
-            prefix = "you" if speaker == "you" else (agent.name.split()[0]
-                                                     if agent else "them")
+            prefix = t("ui.you") if speaker == "you" else (agent.name.split()[0]
+                                                             if agent else t("ui.them"))
             colour = P["ui_cool"] if speaker == "you" else P["ui_text"]
             draw_text(screen, prefix, (body.x + 10, y), 16, P["ui_dim"])
             used = draw_wrapped(screen, text, (body.x + 86, y), body.w - 100, 16,
@@ -64,9 +64,9 @@ class DialogsMixin:
                   (field.x + 10, field.centery), 16,
                   P["ui_text"] if chat.input else P["ui_dim"], anchor="midleft")
         self._button(screen, pygame.Rect(field.right + 8, field.y, 70, 34),
-                     "SEND", "send", active=bool(chat.input.strip()),
+                     t("ui.send"), "send", active=bool(chat.input.strip()),
                      enabled=bool(chat.input.strip()) and not chat.pending)
-        draw_text(screen, "Enter send · Esc close", (rect.right - 16, rect.y + 12),
+        draw_text(screen, t("ui.chat_controls"), (rect.right - 16, rect.y + 12),
                   8, P["ui_dim"], anchor="topright")
 
     def _setup(self, screen, app, w, h) -> None:
@@ -78,16 +78,13 @@ class DialogsMixin:
         y = rect.y + 40
         y += draw_wrapped(screen, t("ui.no_llm_hint"), (rect.x + 16, y),
                           rect.w - 140, 16, P["ui_text"], max_lines=3)
-        lines = [
-            "Ollama:  ollama run llama3.2",
-            "OpenAI:  OPENAI_API_KEY=... in .env",
-            "Claude:  claude  (subscription login)",
-            "Codex:   codex   (subscription login)",
-        ]
+        lines = [t(key) for key in (
+            "setup.example_ollama", "setup.example_openai",
+            "setup.example_claude", "setup.example_codex")]
         for i, line in enumerate(lines):
             draw_text(screen, line, (rect.x + 16, y + 4 + i * 20), 16, P["ui_dim"])
         self._button(screen, pygame.Rect(rect.right - 112, rect.y + 40, 96, 28),
-                     "RETRY", "llm_retry")
+                      t("ui.retry"), "llm_retry")
         self._button(screen, pygame.Rect(rect.right - 112, rect.y + 76, 96, 28),
                      t("setup.open"), "provider_open")
         self._button(screen, pygame.Rect(rect.right - 38, rect.y + 8, 24, 24),
@@ -169,7 +166,8 @@ class DialogsMixin:
         self._panel(screen, rect, fill=(28, 25, 38), border=P["ui_line"])
         draw_text(screen, t("ui.chronicle"), (rect.x + 20, rect.y + 14), 16,
                   P["ui_accent"], chunky=True)
-        draw_text(screen, f"{app.clock.date_text()} · Day {app.day_number}",
+        draw_text(screen, f"{app.clock.date_text()} · "
+                  f"{t('ui.day_count', day=app.day_number)}",
                   (rect.x + 190, rect.y + 18), 16, P["ui_dim"])
         self._button(screen, pygame.Rect(rect.right - 44, rect.y + 10, 30, 30),
                      "x", "close_chronicle")
@@ -205,7 +203,7 @@ class DialogsMixin:
         visits = app.news.recent_visits(6)
         if visits:
             vy = rect.bottom - 30
-            draw_text(screen, f"{len(visits)} recent dispatches · scroll to read",
+            draw_text(screen, t("ui.recent_dispatches", count=len(visits)),
                       (rect.x + 20, vy), 8, P["ui_dim"])
 
     def action_at(self, pos) -> str | None:

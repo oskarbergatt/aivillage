@@ -111,7 +111,7 @@ class HudMixin:
         self._panel(screen, rect)
         draw_text(screen, TITLE, (rect.x + 14, rect.y + 10), 16, P["ui_accent"],
                   chunky=True)
-        badge = "LIVE" if app.clock.is_live else (
+        badge = t("ui.live") if app.clock.is_live else (
             t("ui.paused") if app.clock.paused else f"{app.clock.sim_speed}x")
         badge_colour = P["ui_good"] if app.clock.is_live else (
             P["ui_warn"] if app.clock.paused else P["ui_cool"])
@@ -172,10 +172,10 @@ class HudMixin:
                   (rect.x + 14, rect.y + 8), 16, colour)
 
         status = app.news.status()
-        news_line = (f"{status['feeds_ok']}/{status['feeds_total']} feeds · "
-                     f"{status['unused']} unread")
+        news_line = t("ui.feed_status", ok=status["feeds_ok"],
+                       total=status["feeds_total"], unread=status["unused"])
         if status["pending"]:
-            news_line = "retelling a dispatch…"
+            news_line = t("ui.feed_retelling")
         draw_text(screen, _truncate(news_line, 16, 250), (rect.x + 14, rect.y + 28),
                   16, P["ui_dim"])
         draw_text(screen, t("ui.language") + ": " + app.i18n.language.upper(),
@@ -207,7 +207,7 @@ class HudMixin:
         talk_agent = app.selected_agent()
         buttons = [
             ("EN" if app.i18n.language == "de" else "DE", 56, "lang", False, True),
-            ("UNMUTE" if app.voice.muted else "MUTE", 76, "mute",
+            (t("ui.unmute") if app.voice.muted else t("ui.mute"), 76, "mute",
              app.voice.muted, True),
             ("C", 46, "chronicle", app.show_chronicle, True),
             ("S", 46, "save", False, True),
@@ -228,7 +228,8 @@ class HudMixin:
 
         if app.world.build_site is not None:
             prog = app.world.build_site.progress
-            draw_text(screen, f"Town hall {int(prog * 100)}%",
+            draw_text(screen, t("ui.town_hall_progress",
+                                progress=int(prog * 100)),
                       (rect.x + 14, rect.y + 124), 16, P["ui_dim"])
             self._bar(screen, pygame.Rect(rect.x + 150, rect.y + 130, rect.w - 170, 9),
                       prog, P["ui_cool"])

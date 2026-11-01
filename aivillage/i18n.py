@@ -157,5 +157,12 @@ class I18n:
     def weather(self, name: str) -> str:
         return self.t(f"weather.{name}")
 
+    def task(self, name: str) -> str:
+        """Translate a visible task label, retaining unknown authored text."""
+        key = f"task.{name}"
+        if key in self._tables.get(self.language, {}):
+            return self.t(key)
+        return name
+
 
 I18N = I18n()

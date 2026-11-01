@@ -5,6 +5,7 @@ from datetime import datetime
 
 from aivillage.config import Config
 from aivillage.i18n import I18n
+from aivillage.agents.jobs import JOBS
 from aivillage.reality.clock import SimClock, SEASONS
 from aivillage.reality.geo import Location
 from aivillage.reality.weather import (WeatherState, _approx_sun,
@@ -42,6 +43,14 @@ def test_all_used_keys_exist():
         for lang in ("en", "de"):
             i18n.set_language(lang)
             assert i18n.t(key) != key, (lang, key)
+
+
+def test_job_task_labels_are_translated_and_unknown_text_is_preserved():
+    i18n = I18n("de")
+    for job in JOBS.values():
+        for task in job.tasks:
+            assert i18n.task(task) != task, task
+    assert i18n.task("model-written sentence") == "model-written sentence"
 
 
 def test_language_toggle_and_format():

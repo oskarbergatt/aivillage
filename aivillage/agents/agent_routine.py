@@ -14,8 +14,8 @@ class AgentRoutineMixin:
         self.task_progress = 0.0
         weather = ctx.weather
         job = job_for(self.persona.job)
-        stormy = weather.condition in ("storm", "snow") or (
-            weather.wet and not job.indoor and self.persona.job != "builder")
+        stormy = ((weather.condition in ("storm", "snow") or weather.wet)
+                  and not job.indoor and self.persona.job != "builder")
 
         if block == "sleep":
             self.state = "walk"
@@ -70,13 +70,6 @@ class AgentRoutineMixin:
         if block == "work":
             if stormy and self.persona.job != "builder":
                 self._choose_intent("break", ctx)
-                return
-            outlook = ctx.forecast(3) if hasattr(ctx, "forecast") else None
-            if (outlook is not None and outlook.condition in ("rain", "storm", "snow")
-                    and self.persona.job in ("farmer", "fisher", "forager", "herbalist")):
-                self.state = "walk"
-                self.go_to_point("tavern_door", jitter=2)
-                self.task_name = "bringing the work in before the weather"
                 return
             work = job.work
             self.state = "walk"

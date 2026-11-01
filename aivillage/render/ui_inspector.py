@@ -67,7 +67,7 @@ class InspectorMixin:
                          (rect.right - 14, y))
         y += 10
         draw_text(screen, t("ui.task"), (rect.x + 14, y), 16, P["ui_dim"])
-        task = agent.task_name or t("ui.idle")
+        task = self.i18n.task(agent.task_name) if agent.task_name else t("ui.idle")
         y += 20
         y += draw_wrapped(screen, task, (rect.x + 14, y), rect.w - 28, 16,
                           P["ui_text"], max_lines=2)

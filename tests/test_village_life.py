@@ -54,6 +54,22 @@ def test_outdoor_worker_goes_to_shelter_in_rain(app, monkeypatch):
     assert agent.intent == "break"
 
 
+def test_clear_current_weather_keeps_worker_at_work_site(app, monkeypatch):
+    agent = app.agent_by_key["pip"]
+    app.weather.condition = "clear"
+    targets = []
+    monkeypatch.setattr(app, "forecast",
+                        lambda hours: SimpleNamespace(condition="rain"),
+                        raising=False)
+    monkeypatch.setattr(agent, "go_to_point",
+                        lambda name, jitter=0: targets.append(name) or True)
+
+    agent._choose_intent("work", app)
+
+    assert targets == ["farm"]
+    assert agent.intent == "work"
+
+
 def test_work_actions_change_without_extra_resource_yields(app):
     agent = app.agent_by_key["pip"]
     agent._pick_task()
