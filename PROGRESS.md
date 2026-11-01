@@ -136,6 +136,7 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 
 | Date | Check | Result |
 |---|---|---|
+| 2026-11-01 | v0.4.11 release verification | All platform builds and six asset checksums passed; CI test matrix passed after making the existing work-shift test explicitly dry-weather |
 | 2026-11-01 | `pytest -q` (v0.4.11) | **188 passed, 1 skipped** |
 | 2026-11-01 | Sunday schedule tests | Reduced hours and All Saints' Day Sunday override passed |
 | 2026-11-01 | v0.4.9 release CI | Tests and all three platform builds passed; release published with six assets |
