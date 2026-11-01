@@ -92,6 +92,18 @@ def test_build_site_completes_once():
     assert not site.contribute(1.0)
 
 
+def test_completed_town_hall_has_a_distinct_roof_and_facade():
+    from aivillage.assets import sprites
+    from aivillage.assets.palette import P
+
+    scaffold = sprites.scaffold(0.0)
+    hall = sprites.scaffold(1.0)
+    assert hall.get_size() == scaffold.get_size()
+    assert hall.get_at((42, 8))[:3] == P["roof_blue_d"]
+    assert hall.get_at((42, 42))[:3] == P["cream"]
+    assert hall.get_at((42, 8)).a > scaffold.get_at((42, 8)).a
+
+
 def test_random_walkable_stays_on_ground():
     world = World(1234)
     rng = random.Random(3)

@@ -158,10 +158,31 @@ def scaffold(progress: float = 0.0) -> pygame.Surface:
             hline(s, y, 10, 73, P["wood_d"])
         dither(s, (10, base_y - 18 - wall_h, 64, wall_h), P["wood_l"], 0.10, rng)
     if progress >= 1.0:
-        pygame.draw.rect(s, P["roof_blue_d"], (4, 30, 76, 8))
-        pygame.draw.rect(s, P["roof_blue"], (8, 24, 68, 8))
-        pygame.draw.rect(s, P["cream"], (34, 56, 16, 22))
-        pygame.draw.rect(s, P["wood_d"], (34, 56, 16, 22), 2)
-        pygame.draw.rect(s, P["window"], (12, 44, 10, 10))
-        pygame.draw.rect(s, P["window"], (62, 44, 10, 10))
+        # Replace the temporary scaffold with a high-contrast finished hall.
+        pygame.draw.rect(s, P["stone_d"], (7, 38, 70, 46))
+        pygame.draw.rect(s, P["cream"], (10, 39, 64, 40))
+        pygame.draw.rect(s, P["wood_d"], (10, 39, 64, 40), 2)
+        for x in (17, 65):
+            pygame.draw.rect(s, P["wood_d"], (x, 40, 3, 38))
+        for y in (50, 63):
+            pygame.draw.line(s, P["wood_l"], (12, y), (72, y), 2)
+        pygame.draw.polygon(s, P["roof_blue_d"],
+                            ((2, 40), (42, 8), (82, 40), (77, 44), (42, 17), (7, 44)))
+        pygame.draw.polygon(s, P["roof_blue"],
+                            ((7, 38), (42, 12), (77, 38), (72, 41), (42, 19), (12, 41)))
+        pygame.draw.line(s, P["roof_blue_d"], (42, 12), (42, 19), 2)
+        pygame.draw.rect(s, P["wood_d"], (35, 56, 14, 28))
+        pygame.draw.rect(s, P["plank"], (37, 58, 10, 26))
+        pygame.draw.circle(s, P["ui_accent"], (44, 71), 1)
+        for x in (13, 60):
+            pygame.draw.rect(s, P["wood_d"], (x - 2, 46, 14, 15))
+            pygame.draw.rect(s, P["window"], (x, 48, 10, 11))
+            pygame.draw.line(s, P["wood_d"], (x + 5, 48), (x + 5, 59), 1)
+            pygame.draw.line(s, P["wood_d"], (x, 53), (x + 10, 53), 1)
+        # Council bell and cupola make the silhouette identifiable at map zoom.
+        pygame.draw.rect(s, P["wood_d"], (36, 22, 12, 12))
+        pygame.draw.rect(s, P["cream"], (39, 24, 6, 8))
+        pygame.draw.polygon(s, P["roof_red"], ((34, 23), (42, 16), (50, 23)))
+        pygame.draw.arc(s, P["ui_accent"], (40, 26, 4, 5), 0, math.pi, 2)
+        pygame.draw.rect(s, P["stone_l"], (7, 80, 70, 5))
     return s

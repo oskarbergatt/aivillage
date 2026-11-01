@@ -3,7 +3,7 @@
 Living checklist. Update it when a milestone lands or a gap closes.
 Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md)
 
-**Last updated:** 2026-11-01 · **Tests:** 190 passed, 1 skipped (`pytest -q`) · **Version:** 0.4.16
+**Last updated:** 2026-11-01 · **Tests:** 191 passed, 1 skipped (`pytest -q`) · **Version:** 0.4.17
 
 ---
 
@@ -134,6 +134,7 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 - [x] Update availability, download/verification, installer, and failure notices use localized text.
 - [x] Dev-mode toggle uses Ctrl+Shift+F9 rather than the D movement key.
 - [x] Detect left/right Ctrl and Shift modifier bits independently in the dev-mode toggle.
+- [x] The completed town hall renders as a distinct full building rather than a sparse scaffold.
 - [x] README includes a headless mock-provider preview (F12 also writes captures to `data/`)
 
 ---
@@ -142,6 +143,7 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 
 | Date | Check | Result |
 |---|---|---|
+| 2026-11-01 | `pytest -q` (v0.4.17) | **191 passed, 1 skipped** |
 | 2026-11-01 | v0.4.16 release CI | Test matrix passed; Windows, macOS and Linux builds and release publication passed |
 | 2026-11-01 | Dev-mode modifier regression | Left Ctrl+Shift and right Ctrl+Shift variants are covered |
 | 2026-11-01 | v0.4.15 release CI | Test matrix passed; Windows, macOS and Linux builds and release publication passed |
