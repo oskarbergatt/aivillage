@@ -4,6 +4,7 @@ from __future__ import annotations
 from .provider_setup import draw_provider_setup
 from .ambient_model import draw_ambient_model
 from .gateway_setup import draw_gateway_setup
+from .help import draw_help
 
 from .ui_shared import (
     P,
@@ -100,6 +101,9 @@ class HudMixin:
         if app.show_gateway:
             self.hits = {}
             draw_gateway_setup(self, screen, app, w, h)
+        if app.show_help:
+            self.hits = {}
+            draw_help(self, screen, app, w, h)
 
     def _top_left(self, screen, app, w, h) -> None:
         t = self.i18n.t

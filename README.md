@@ -146,6 +146,7 @@ voice, news weights, visitor count). Every key has a default; a missing config f
 | `V` | Ask a traveller to come now |
 | `M` | Mute/unmute voice |
 | `S` | Save |
+| `F1` | Help window: controls, latest change and working hours |
 | `F2` | Switch English ↔ German |
 | `F3` | Settings and five save slots |
 | `F10` | Toggle photo mode (hides the interface) |
@@ -154,6 +155,8 @@ voice, news weights, visitor count). Every key has a default; a missing config f
 | `Esc` | Close panel / deselect |
 
 Chat supports typing, Backspace and Ctrl+V paste. Enter sends.
+Press **F1** for the help window. It collects the controls, explains the latest conversation
+change and lists when villagers work, so the bottom bar only needs a help shortcut.
 The F3 conversation toggles last for the current session. Saving overwrites the selected slot;
 autosave follows the last successfully saved or loaded slot. A slot with a different world seed
 cannot be loaded into the current village.

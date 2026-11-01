@@ -56,6 +56,10 @@ class VillageControlsMixin:
             self.show_jobs = not self.show_jobs
         elif action == "close_jobs":
             self.show_jobs = False
+        elif action == "help":
+            self.show_help = not self.show_help
+        elif action == "close_help":
+            self.show_help = False
         elif action == "send":
             self.submit_chat()
         elif action == "close_chat":
@@ -144,6 +148,10 @@ class VillageControlsMixin:
             return
         if self._ambient_model_key(e):
             return
+        if self.show_help:
+            if e.key in (pygame.K_F1, pygame.K_ESCAPE):
+                self.show_help = False
+            return
         if e.key == pygame.K_F10:
             self.photo_mode = not self.photo_mode
             return
@@ -154,6 +162,9 @@ class VillageControlsMixin:
                 self._postcard()
             elif e.key == pygame.K_ESCAPE:
                 self.photo_mode = False
+            return
+        if e.key == pygame.K_F1:
+            self.show_help = True
             return
         if self.chat.active:
             if e.key == pygame.K_ESCAPE:
@@ -271,6 +282,8 @@ class VillageControlsMixin:
                 self._action(action)
                 self._press_world = False
                 return
+            if self.show_help:
+                return
             if self.show_provider_setup or self.show_settings:
                 return
             if self.show_jobs:
@@ -283,7 +296,9 @@ class VillageControlsMixin:
             self._dragging = False
             self._drag_last = e.pos
         elif e.button == 3:
-            if self.chat.active:
+            if self.show_help:
+                self.show_help = False
+            elif self.chat.active:
                 self.close_chat()
             elif self.show_jobs:
                 self.show_jobs = False

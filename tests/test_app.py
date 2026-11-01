@@ -195,6 +195,37 @@ def test_chronicle_and_toasts_draw(app):
     app._draw(0.016)
 
 
+def test_help_window_toggles_and_draws(app):
+    app._draw(0.016)
+    assert "help" in app.ui.hits
+    app._key(pygame.event.Event(pygame.KEYDOWN, key=pygame.K_F1,
+                                unicode="", mod=0))
+    assert app.show_help
+    app._draw(0.016)
+    assert "close_help" in app.ui.hits
+    assert "help" not in app.ui.hits
+    app._key(pygame.event.Event(pygame.KEYDOWN, key=pygame.K_ESCAPE,
+                                unicode="", mod=0))
+    assert not app.show_help
+    app._action("help")
+    assert app.show_help
+    app._action("close_help")
+    assert not app.show_help
+
+
+def test_help_text_explains_update_and_work_times(app):
+    for lang in ("en", "de"):
+        app.i18n.set_language(lang)
+        assert "0.4.5" in app.i18n.t("help.update_title")
+        assert app.i18n.t("help.update_body") != "help.update_body"
+        assert "07:30" in app.i18n.t("help.work_day")
+        assert "19:00" in app.i18n.t("help.work_night")
+        for key in ("help.controls_pan", "help.work_kid", "help.work_market",
+                    "help.work_note"):
+            assert app.i18n.t(key) != key
+    app.i18n.set_language("en")
+
+
 def test_save_and_load_roundtrip(app, tmp_path):
     app.add_chronicle("A remembered day", "event")
     data = app.snapshot()

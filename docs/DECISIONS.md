@@ -264,3 +264,17 @@ v0.4 change additive: no new storage, no save migration, and the same `Agent` yi
 **Cost:** a shepherd and a beekeeper look like they produce food rather than wool and honey. If a
 future version wants distinct goods, the job registry is the only place that needs a new resource
 name, followed by `app.stats` and the HUD.
+
+## 23. Controls live in a help window, not the bottom bar
+
+**Actual:** pressing `F1` opens a modal help window with the controls, the latest conversation
+change and the village working hours. The bottom bar now only contains a clickable `F1 · Help`
+shortcut. `F1`, `Esc`, the close button and right-click all dismiss it; mouse wheel and keyboard
+panning are ignored while it is open.
+
+**Why:** the bottom line had grown into a dense list that was hard to read and could not explain
+how the village works. A modal keeps normal play uncluttered and gives the update notes and work
+times a place without changing the released ambient conversation behaviour.
+
+**Cost:** help content is static text in both locale tables, so new controls or schedule changes
+must be reflected there manually.

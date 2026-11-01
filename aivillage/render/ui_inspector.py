@@ -17,8 +17,8 @@ class InspectorMixin:
         bar = pygame.Rect(0, h - 34, w, 34)
         pygame.draw.rect(screen, (20, 18, 28), bar)
         pygame.draw.line(screen, P["ui_line"], (0, bar.y), (w, bar.y))
-        hint = self.i18n.t("ui.hint_pan") + " · T talk · J jobs · C chronicle · F3 settings · F10 photo"
-        draw_text(screen, hint, (16, bar.y + 9), 16, P["ui_dim"])
+        self._button(screen, pygame.Rect(16, bar.y + 6, 124, 22),
+                     self.i18n.t("ui.help_open"), "help", size=8)
 
     def _inspector(self, screen, app, w, h) -> None:
         sel = app.selected

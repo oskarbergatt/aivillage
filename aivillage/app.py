@@ -120,6 +120,7 @@ class VillageApp(ChatMixin, AlertCourierMixin, PhotoExportMixin, VillageServices
         self.chat = ChatState()
         self.show_chronicle = False
         self.show_jobs = False
+        self.show_help = False
         self.show_settings = False
         self.show_provider_setup = False
         self.show_ambient_model = False

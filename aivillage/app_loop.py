@@ -46,7 +46,7 @@ class VillageLoopMixin:
             elif e.type == pygame.KEYDOWN:
                 self._key(e)
             elif e.type == pygame.MOUSEWHEEL:
-                if self.show_provider_setup or self.show_settings:
+                if self.show_provider_setup or self.show_settings or self.show_help:
                     continue
                 if self.show_chronicle:
                     self.ui.scroll(e.y)
@@ -70,7 +70,8 @@ class VillageLoopMixin:
 
         keys = pygame.key.get_pressed()
         if (not self.chat.active and not self.show_chronicle and not self.show_jobs
-                and not self.show_settings and not self.show_provider_setup):
+                and not self.show_settings and not self.show_provider_setup
+                and not self.show_help):
             step = 260.0 * (1 / 60.0)
             dx = (keys[pygame.K_d] or keys[pygame.K_RIGHT]) - \
                  (keys[pygame.K_a] or keys[pygame.K_LEFT])
