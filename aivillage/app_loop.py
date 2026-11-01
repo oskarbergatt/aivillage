@@ -18,6 +18,14 @@ class VillageLoopMixin:
             self._dragging = False
             return
         wx, wy = self.camera.screen_to_world(*e.pos)
+        for name, house in self.world.buildings.items():
+            bounds = pygame.Rect(house.x, house.y,
+                                 house.sprite.get_width(), house.sprite.get_height())
+            if bounds.collidepoint(wx, wy):
+                self.inside_house = name
+                self.selected = None
+                self.follow_selected = False
+                return
         doors = [(math.hypot(point[0] - wx, point[1] - wy), key)
                  for key, point in self.world.points.items() if key.startswith("home_")]
         if doors:

@@ -14,6 +14,16 @@ def test_house_door_enters_and_escape_leaves(app):
     assert app.inside_house == ""
 
 
+def test_clicking_house_roof_enters_without_hitting_the_door(app):
+    house = app.world.buildings["pip"]
+    point = (house.x + house.sprite.get_width() // 2,
+             house.y + house.sprite.get_height() // 3)
+    screen_pos = app.camera.world_to_screen(*point)
+    app._press_world = True
+    app._mouse_up(SimpleNamespace(button=1, pos=screen_pos))
+    assert app.inside_house == "pip"
+
+
 def test_update_versions_are_compared_safely():
     from aivillage.update_check import installer_for, newer_version
     assert newer_version("0.5.0", "0.4.0")

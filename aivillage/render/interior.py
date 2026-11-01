@@ -28,11 +28,12 @@ class InteriorRendererMixin:
         pygame.draw.rect(screen, (90, 60, 65), (room.x + 34, floor.y + 48, 112, 74))
         pygame.draw.rect(screen, (208, 177, 143), (room.x + 34, floor.y + 48, 112, 18))
         name = house.data.get("name", house.kind) if house else "Home"
-        title = render(f"{name.title()}'s home", 24, P["ui_accent"], P["ink"])
+        title = render(i18n.t("interior.home_title", name=name.title()),
+                       24, P["ui_accent"], P["ink"])
         screen.blit(title, title.get_rect(center=(w // 2, room.y - 20)))
         resident = next((a for a in agents if a.key == name), None)
         if resident:
             sprite = self._scaled_sprite(resident.sprite(), .9)
             screen.blit(sprite, sprite.get_rect(midbottom=(room.centerx, floor.bottom - 10)))
-        hint = render("ESC · Leave home", 16, P["ui_text"], P["ink"])
+        hint = render(i18n.t("interior.leave_hint"), 16, P["ui_text"], P["ink"])
         screen.blit(hint, hint.get_rect(center=(w // 2, h - 22)))

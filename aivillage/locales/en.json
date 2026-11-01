@@ -1,5 +1,7 @@
 {
   "app.title": "aivillage",
+  "interior.home_title": "{name}'s home",
+  "interior.leave_hint": "ESC · Leave home",
   "gateway.open": "CONFIGURE GATEWAY",
   "gateway.title": "CUSTOM AI GATEWAY",
   "gateway.help": "OpenAI Chat Completions compatible gateway. Tab or click to change fields; Enter saves.",
@@ -28,8 +30,8 @@
   "help.controls_time": "Space: pause · 1-4: speed · L: live · N: sleep until dawn",
   "help.controls_misc": "V: traveller · M: mute · S: save · F2: language · F10: photo mode",
   "help.controls_extra": "F12: screenshot · F11: postcard in photo mode · Esc: close or deselect",
-  "help.update_title": "WHAT CHANGED IN 0.4.11",
-  "help.update_body": "Sunday work now varies by job: outdoor trades work 10:00–14:00 and indoor trades 11:00–15:00. Children and nocturnal villagers keep their usual schedules.",
+  "help.update_title": "WHAT CHANGED IN 0.4.12",
+  "help.update_body": "Click anywhere on a house to look inside; press Esc to return to the village.",
   "help.work_title": "WHEN VILLAGERS WORK",
   "help.work_day": "Adults: 07:30-12:00 and 13:00-17:00.",
   "help.work_night": "Night worker (Wisp): 19:00-23:00.",
