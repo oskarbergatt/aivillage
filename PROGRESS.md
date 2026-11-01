@@ -143,6 +143,7 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 
 | Date | Check | Result |
 |---|---|---|
+| 2026-11-01 | v0.4.17 release CI | Test matrix passed; Windows, macOS and Linux builds and release publication passed |
 | 2026-11-01 | `pytest -q` (v0.4.17) | **191 passed, 1 skipped** |
 | 2026-11-01 | v0.4.16 release CI | Test matrix passed; Windows, macOS and Linux builds and release publication passed |
 | 2026-11-01 | Dev-mode modifier regression | Left Ctrl+Shift and right Ctrl+Shift variants are covered |
