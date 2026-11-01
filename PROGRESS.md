@@ -3,7 +3,7 @@
 Living checklist. Update it when a milestone lands or a gap closes.
 Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md)
 
-**Last updated:** 2026-11-01 · **Tests:** 190 passed, 1 skipped (`pytest -q`) · **Version:** 0.4.15
+**Last updated:** 2026-11-01 · **Tests:** 190 passed, 1 skipped (`pytest -q`) · **Version:** 0.4.16
 
 ---
 
@@ -133,6 +133,7 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
       town-hall completion, and visitor-spawn shortcuts; it is session-only.
 - [x] Update availability, download/verification, installer, and failure notices use localized text.
 - [x] Dev-mode toggle uses Ctrl+Shift+F9 rather than the D movement key.
+- [x] Detect left/right Ctrl and Shift modifier bits independently in the dev-mode toggle.
 - [x] README includes a headless mock-provider preview (F12 also writes captures to `data/`)
 
 ---
@@ -141,6 +142,7 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 
 | Date | Check | Result |
 |---|---|---|
+| 2026-11-01 | Dev-mode modifier regression | Left Ctrl+Shift and right Ctrl+Shift variants are covered |
 | 2026-11-01 | v0.4.15 release CI | Test matrix passed; Windows, macOS and Linux builds and release publication passed |
 | 2026-11-01 | Focused dev-mode/input tests | New Ctrl+Shift+F9 toggle and resource/needs cheats passed |
 | 2026-11-01 | v0.4.14 release CI | Test matrix passed; Windows, macOS and Linux builds and release publication passed |
