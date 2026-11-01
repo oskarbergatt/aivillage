@@ -24,12 +24,15 @@ class AgentRoutineMixin:
             return
         if block == "meal":
             self.state = "walk"
-            if self.persona.is_child:
-                self.go_to_point(self.home_point, jitter=1)
-            else:
-                target = "tavern_door" if self.rng.random() < 0.6 else "home_orin"
-                self.go_to_point(target, jitter=1)
+            self.meal_plan = self._plan_meal(ctx)
+            arrived = self.go_to_point(self.meal_plan.target, jitter=1)
+            if not arrived:
+                # A blocked door is no reason to starve: try home instead.
+                self.meal_plan = self._fallback_meal_plan()
+                arrived = self.go_to_point(self.home_point, jitter=1)
             self.task_name = "going to eat"
+            if arrived and not self.path:
+                self._arrived(ctx)
             return
         if block == "school":
             self.state = "walk"
@@ -52,9 +55,12 @@ class AgentRoutineMixin:
             return
         if block == "market":
             self.state = "walk"
-            if not self.go_to_point("market_front", jitter=3):
-                self.go_to_point("plaza", jitter=3)
+            arrived = self.go_to_point("market_front", jitter=3)
+            if not arrived:
+                arrived = self.go_to_point("plaza", jitter=3)
             self.task_name = "keeping the Saturday market"
+            if arrived and not self.path:
+                self._arrived(ctx)
             return
         if block == "repair":
             self.state = "walk"
@@ -157,7 +163,8 @@ class AgentRoutineMixin:
             return
 
         # arrived / stationary behaviour
-        self.animator.update(dt, False, self.state in ("work", "school", "play"))
+        self.animator.update(dt, False,
+                             self.state in ("work", "school", "play", "cook"))
         if self.state == "work":
             self._work(dt, ctx)
         elif self.state == "sleep":
@@ -171,11 +178,17 @@ class AgentRoutineMixin:
             if self.action_timer <= 0:
                 self.state = "walk"
                 self._new_wander_target(ctx)
-        elif self.state == "meal":
+        elif self.state in ("cook", "buy"):
             self.action_timer -= dt
             if self.action_timer <= 0:
-                self.state = "idle"
-                self.action_timer = 5
+                self._begin_eating()
+        elif self.state == "meal":
+            self._eat(dt)
+        elif self.state == "shop":
+            self.action_timer -= dt
+            if self.action_timer <= 0:
+                self.state = "free"
+                self.action_timer = self.rng.uniform(15, 35)
         elif self.state in ("free", "break", "idle"):
             self.action_timer -= dt
             if self.action_timer <= 0:
@@ -193,13 +206,22 @@ class AgentRoutineMixin:
             self.state = "sleep"
             return
         if self.intent == "meal":
-            self.state = "meal"
-            self.needs.eat(58)
-            self.action_timer = ctx.rng.uniform(4, 9) * 60
+            self._start_meal(ctx)
             if self.bubble is None and self.rng.random() < 0.35:
                 line = ctx.flavour_meal(self)
                 if line:
                     self.say(line, 4.0, color=(240, 224, 190))
+            return
+        if self.intent == "market":
+            trade = ctx.market_trade(self) if hasattr(ctx, "market_trade") else ""
+            if trade:
+                self.state = "shop"
+                self.task_name = ("selling at the market" if trade == "sell"
+                                  else "buying at the market")
+                self.action_timer = self.rng.uniform(15, 35)
+            else:
+                self.state = "free"
+                self.action_timer = self.rng.uniform(20, 50)
             return
         if self.intent == "school":
             self.state = "school"

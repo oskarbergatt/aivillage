@@ -55,8 +55,12 @@ class InspectorMixin:
         state = agent.state if agent.state else "idle"
         draw_text(screen, t(f"state.{state}"), (rect.x + 122, rect.y + 58), 16,
                   P["ui_dim"])
-        draw_text(screen, f"Day {app.day_number}", (rect.x + 122, rect.y + 78),
+        draw_text(screen, f"{t('ui.day')} {app.day_number} · {t('ui.purse')} "
+                  f"{agent.wallet:.0f}", (rect.x + 122, rect.y + 78),
                   16, P["ui_dim"])
+        if agent.meal_kind:
+            draw_text(screen, t("ui.meal") + ": " + t(f"meal.{agent.meal_kind}"),
+                      (rect.x + 122, rect.y + 98), 16, P["ui_dim"])
 
         y = rect.y + 122
         pygame.draw.line(screen, P["ui_line"], (rect.x + 14, y),

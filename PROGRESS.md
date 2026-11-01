@@ -3,7 +3,7 @@
 Living checklist. Update it when a milestone lands or a gap closes.
 Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md)
 
-**Last updated:** 2026-11-01 · **Tests:** 174 passed, 1 skipped (`pytest -q`) · **Version:** 0.4.5
+**Last updated:** 2026-11-01 · **Tests:** 184 passed, 1 skipped (`pytest -q`) · **Version:** 0.4.6
 
 ---
 
@@ -97,7 +97,7 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 - [x] Night lighting, warm window pools, lamp glow, additive light overlay
 - [x] Toasts, chronicle panel, dispatch card, setup card, chat panel, jobs panel
 - [x] Real holiday/festival calendar, Saturday market/Monday routines, forecast-aware work planning
-- [x] 174 passing automated tests (world, assets, reality, news, setup, gateway, app, jobs/self, LLM CLIs, module layout, builds)
+- [x] 184 passing automated tests (world, assets, reality, news, setup, gateway, app, jobs/self, economy/meals, LLM CLIs, module layout, builds)
 - [x] In-app AI provider chooser with localized instructions and restart-safe non-secret persistence
 - [x] Double-click Windows launcher, setup links and opt-in local Ollama model download
 - [x] Native desktop build script and Windows/macOS/Linux CI workflow; bundled apps use per-user data
@@ -110,8 +110,14 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 - [x] Bounded per-villager conversation threads, saved across sessions and used by pair and group prompts
 - [x] LLM-authored multi-day story continuity, saved and provided to conversations
 - [x] Click-to-enter cutaway house interiors; Esc returns to the village
-- [x] F1 help window collects the controls, explains the 0.4.5 answer-preparation change and lists
-      village working hours; the bottom bar now only shows a help shortcut
+- [x] F1 help window collects the controls, explains the latest change and lists village working
+      hours; the bottom bar now only shows a help shortcut
+- [x] Villager meal plans: cook, buy tavern stew, market food or scrounge, chosen from hunger, purse,
+      pantry and traits; cooking uses village food and eating restores hunger gradually
+- [x] Purse economy: workers keep a share of earned coin, meals and market trades conserve village
+      money, and wallets survive save/load (old saves keep their generated purse)
+- [x] Inspector shows each villager's purse and current meal; locale/fallback keys cover cooking,
+      buying and every meal kind in English and German
 - [x] README includes a headless mock-provider preview (F12 also writes captures to `data/`)
 
 ---
@@ -120,6 +126,8 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 
 | Date | Check | Result |
 |---|---|---|
+| 2026-11-01 | `pytest -q` (v0.4.6) | **184 passed, 1 skipped**, 6 deprecation warnings (`pygame.image.tostring`) |
+| 2026-11-01 | Meal smoke run | Headless mock game ran 2 h 40 min over lunch without errors; villagers walked, cooked/bought, ate to full hunger and returned to work |
 | 2026-11-01 | `pytest -q` | **174 passed, 1 skipped**, 6 deprecation warnings (`pygame.image.tostring`) |
 | 2026-11-01 | `pytest -q` | **172 passed, 1 skipped**, 6 deprecation warnings (`pygame.image.tostring`) |
 | 2026-11-01 | `pytest -q` | **170 passed, 1 skipped**, 6 deprecation warnings (`pygame.image.tostring`) |

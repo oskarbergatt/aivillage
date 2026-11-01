@@ -15,7 +15,9 @@ gathers at the bell to hear it.
 Nothing is scripted: dialogue is LLM-only, the date and season are real, the sky matches Open-Meteo,
 and the village sleeps when you do. Left alone with a real provider, villagers also reshape
 themselves: they may choose a new trade, write their own ambition and background, and pick a hat and
-outfit.
+outfit. Every villager also keeps a purse. At mealtimes they decide for themselves whether to cook at
+home from the village pantry, buy stew at the tavern, or trade at the Saturday market — and then eat
+their meal slowly, restoring hunger as they go.
 
 > Status: v0.4, playable. See [`PROGRESS.md`](PROGRESS.md) for exactly what is and is not done.
 
@@ -214,6 +216,12 @@ rate and volume still vary by villager. A working AI provider is needed for gene
 - **Resource trades:** Maude Ash shepherds the east pasture, Ivo Thrum keeps the hives, Greta Fenn
   works the south woodlot and Corin Slate quarries stone at the west edge. Each has a home, a visible
   work site and a tool, and each feeds the same wood/stone/food stores as the older trades.
+- **Meals and money:** every villager has a purse that fills with a share of the coin their work
+  produces. Meal times are planned, not scripted: they weigh hunger, purse and pantry, then cook at
+  home, buy tavern stew, or scrounge a cold bite when neither is possible. Cooking consumes village
+  food; buying moves coin into the village till. On Saturdays between 09:00 and 14:00 they can also
+  buy provisions or sell wares at the market. A meal is eaten over time, so hunger refills gradually
+  instead of snapping back the moment they arrive.
 - **Self-direction:** with a real provider, villagers periodically rewrite themselves — a new trade,
   a one-line ambition, a short bio, a quirk, a hat and an outfit. Values are validated against the
   job registry, so a model cannot invent a trade or corrupt a save. Children choose a `dream_job`
@@ -259,6 +267,7 @@ config.example.toml     all settings, documented
 aivillage/
   app.py                controller: loop, input, simulation, visitors, save/load
   config.py  i18n.py    config + runtime language
+  economy.py            meal plans, prices, wages and the purse economy
   reality/              clock, Open-Meteo weather, location
   world/                map generation, objects, A* pathfinding
   agents/               personas, roster, jobs, needs, memory, animation, brain, visitors

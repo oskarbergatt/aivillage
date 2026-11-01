@@ -28,12 +28,15 @@ from .brain_shared import (
     sprites,
 )
 
+from ..economy import MealPlan
 from .agent_identity import AgentIdentityMixin
+from .agent_meals import AgentMealsMixin
 from .agent_routine import AgentRoutineMixin
 from .agent_social import AgentSocialMixin
 
 
-class Agent(AgentIdentityMixin, AgentRoutineMixin, AgentSocialMixin):
+class Agent(AgentIdentityMixin, AgentMealsMixin, AgentRoutineMixin,
+            AgentSocialMixin):
     def __init__(self, persona: Persona, world, rng: random.Random):
         # Each simulation owns its identity; self-direction must not mutate
         # the shared founder roster or leak into a new village.
@@ -70,3 +73,9 @@ class Agent(AgentIdentityMixin, AgentRoutineMixin, AgentSocialMixin):
         self.eating = False
         self.selected = False
         self.home_point = f"home_{persona.home}"
+        self.wallet = round(rng.uniform(2.5, 9.0), 2)
+        self.meal_plan: MealPlan | None = None
+        self.meal_kind = ""
+        self.meal_nutrition = 0.0
+        self.meal_served = 0.0
+        self.meal_total = 0.0

@@ -29,6 +29,7 @@ class VillagePersistenceMixin:
                 a.key: {
                     "needs": {"hunger": a.needs.hunger, "energy": a.needs.energy,
                               "social": a.needs.social, "fun": a.needs.fun},
+                    "wallet": round(a.wallet, 2),
                     "affinity": dict(a.memory.affinity),
                     "memory": [{"text": m.text, "day": m.day, "kind": m.kind,
                                 "dispatch_id": m.dispatch_id}
@@ -119,6 +120,12 @@ class VillagePersistenceMixin:
                     if field_name in needs:
                         setattr(agent.needs, field_name,
                                 float(needs[field_name]))
+                try:
+                    if "wallet" in adata:
+                        agent.wallet = max(0.0, min(9999.0,
+                                                     float(adata["wallet"])))
+                except (TypeError, ValueError):
+                    pass
                 agent.memory.affinity = {k: float(v) for k, v in
                                          adata.get("affinity", {}).items()}
                 from .agents.memory import Memory

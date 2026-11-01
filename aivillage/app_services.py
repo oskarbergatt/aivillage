@@ -13,6 +13,14 @@ from .app_shared import (
     sprites,
     threading,
 )
+from .agents.jobs import job_for
+from .reality.calendar import routine_key
+from .economy import (
+    MARKET_MEAL_PRICE,
+    MARKET_TRADE_PRICE,
+    TAVERN_MEAL_PRICE,
+    WAGE_SHARE,
+)
 
 
 class VillageServicesMixin:
@@ -83,9 +91,67 @@ class VillageServicesMixin:
         if len(self.chronicle) > 260:
             self.chronicle = self.chronicle[-260:]
 
+    def market_open(self) -> bool:
+        now = self.clock.now
+        minute = now.hour * 60 + now.minute
+        return routine_key(now) == "market" and 9 * 60 <= minute < 14 * 60
+
     def gain(self, resource: str, amount: float, agent: Agent) -> None:
-        if resource in self.stats:
-            self.stats[resource] += amount
+        if resource not in self.stats:
+            return
+        self.stats[resource] += amount
+        if resource == "coin" and agent is not None:
+            # Paid trades also put a wage share into the worker's own purse.
+            agent.wallet = round(agent.wallet + float(amount) * WAGE_SHARE, 2)
+
+    def take_ingredient(self, agent: Agent) -> bool:
+        """Take one meal's worth of food from the village pantry."""
+        if float(self.stats.get("food", 0)) < 1.0:
+            return False
+        self.stats["food"] -= 1.0
+        return True
+
+    def buy_meal(self, agent: Agent, kind: str) -> bool:
+        """Pay for a prepared meal at the tavern or the Saturday market."""
+        if kind == "market" and not self.market_open():
+            return False
+        price = MARKET_MEAL_PRICE if kind == "market" else TAVERN_MEAL_PRICE
+        if agent.wallet + 1e-9 < price:
+            return False
+        if float(self.stats.get("food", 0)) < 1.0:
+            return False
+        agent.wallet = round(max(0.0, agent.wallet - price), 2)
+        self.stats["coin"] += price
+        self.stats["food"] -= 1.0
+        return True
+
+    def market_trade(self, agent: Agent) -> str:
+        """Let a villager buy provisions or sell wares on market day.
+
+        Buying moves coins from the purse into the village till and food out of
+        the pantry.  Selling moves coins the other way.  Both sides therefore
+        use the same small stock, instead of inventing money from nowhere.
+        """
+        if not self.market_open():
+            return ""
+        price = MARKET_TRADE_PRICE
+        can_buy = (float(self.stats.get("food", 0)) >= 1.0
+                   and agent.wallet + 1e-9 >= price)
+        job = job_for(agent.persona.job)
+        can_sell = (not agent.persona.is_child and bool(job.resource)
+                    and float(self.stats.get("coin", 0)) >= price)
+        if can_buy and (not can_sell or agent.rng.random() < 0.6):
+            agent.wallet = round(max(0.0, agent.wallet - price), 2)
+            self.stats["coin"] += price
+            self.stats["food"] -= 1.0
+            agent.needs.fun = min(100.0, agent.needs.fun + 4.0)
+            agent.needs.socialise(4.0)
+            return "buy"
+        if can_sell:
+            agent.wallet = round(agent.wallet + price, 2)
+            self.stats["coin"] -= price
+            return "sell"
+        return ""
 
     def build(self, amount: float, agent: Agent) -> None:
         site = self.world.build_site
@@ -163,7 +229,8 @@ class VillageServicesMixin:
             "temp": f"{self.weather.temp_c:.0f}",
             "season": t.t(f"season.{self.clock.season()}"),
             "stock": (f"wood {int(self.stats['wood'])}, stone "
-                      f"{int(self.stats['stone'])}, food {int(self.stats['food'])}"),
+                      f"{int(self.stats['stone'])}, food {int(self.stats['food'])}, "
+                      f"coin {int(self.stats['coin'])}"),
             "place": loc.label,
         }
         if self.config.get("social.story_arcs", True) and self.story_arc:
@@ -178,6 +245,7 @@ class VillageServicesMixin:
             ctx.update({
                 "memories": agent.memory.recent(5),
                 "mood": agent.needs.mood_word(),
+                "purse": f"{agent.wallet:.0f} coin",
                 "activity": agent.state,
                 "thread": agent.memory.thread_prompt() if self.config.get("social.threads", True) else [],
                 "relations": ("How you feel about your neighbours: " +
