@@ -3,7 +3,7 @@
 Living checklist. Update it when a milestone lands or a gap closes.
 Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md)
 
-**Last updated:** 2026-11-01 · **Tests:** 168 passed, 1 skipped (`pytest -q`) · **Version:** 0.4.2
+**Last updated:** 2026-11-01 · **Tests:** 168 passed, 1 skipped (`pytest -q`) · **Version:** 0.4.3
 
 ---
 
