@@ -37,7 +37,9 @@ class AgentSocialMixin:
             ctx.build(job.amount, self)
         elif job.resource:
             ctx.gain(job.resource, job.amount, self)
-        self.needs.energy -= 1.0
+        # Tasks complete every few simulation minutes; a full energy point
+        # per task emptied the entire roster before the afternoon shift.
+        self.needs.energy = max(0.0, self.needs.energy - 0.1)
         self.needs.fun += 1.0
 
     def available_for_chat(self) -> bool:

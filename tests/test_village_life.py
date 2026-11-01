@@ -67,6 +67,16 @@ def test_work_actions_change_without_extra_resource_yields(app):
     assert app.stats == before
 
 
+def test_completing_work_tasks_does_not_empty_the_energy_bar(app):
+    agent = app.agent_by_key["marrow"]
+    agent.needs.energy = 85.0
+
+    for _ in range(40):
+        agent._complete_task(app)
+
+    assert abs(agent.needs.energy - 81.0) < 1e-9
+
+
 def test_ambient_talk_yields_to_work_schedule(app, monkeypatch):
     agent, other = app.agent_by_key["pip"], app.agent_by_key["orin"]
     app.clock._sim = datetime(2026, 10, 29, 10, 0)
