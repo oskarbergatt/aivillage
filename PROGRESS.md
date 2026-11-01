@@ -3,7 +3,7 @@
 Living checklist. Update it when a milestone lands or a gap closes.
 Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md)
 
-**Last updated:** 2026-11-01 · **Tests:** 184 passed, 1 skipped (`pytest -q`) · **Version:** 0.4.6
+**Last updated:** 2026-11-01 · **Tests:** 185 passed, 1 skipped (`pytest -q`) · **Version:** 0.4.7
 
 ---
 
@@ -97,7 +97,7 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 - [x] Night lighting, warm window pools, lamp glow, additive light overlay
 - [x] Toasts, chronicle panel, dispatch card, setup card, chat panel, jobs panel
 - [x] Real holiday/festival calendar, Saturday market/Monday routines, forecast-aware work planning
-- [x] 184 passing automated tests (world, assets, reality, news, setup, gateway, app, jobs/self, economy/meals, LLM CLIs, module layout, builds)
+- [x] 185 passing automated tests (world, assets, reality, news, setup, gateway, app, jobs/self, economy/meals, LLM CLIs, module layout, builds)
 - [x] In-app AI provider chooser with localized instructions and restart-safe non-secret persistence
 - [x] Double-click Windows launcher, setup links and opt-in local Ollama model download
 - [x] Native desktop build script and Windows/macOS/Linux CI workflow; bundled apps use per-user data
@@ -118,6 +118,8 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
       money, and wallets survive save/load (old saves keep their generated purse)
 - [x] Inspector shows each villager's purse and current meal; locale/fallback keys cover cooking,
       buying and every meal kind in English and German
+- [x] Scheduled work, school and market blocks take priority over lingering meals and recovery naps;
+      the 13:00 work hand-off is covered by a regression test
 - [x] README includes a headless mock-provider preview (F12 also writes captures to `data/`)
 
 ---
@@ -126,6 +128,7 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 
 | Date | Check | Result |
 |---|---|---|
+| 2026-11-01 | `pytest -q` (v0.4.7) | **185 passed, 1 skipped** |
 | 2026-11-01 | v0.4.6 release CI | Tests and all three platform builds passed; release published with six assets |
 | 2026-11-01 | v0.4.6 checksums | All six downloaded assets matched `SHA256SUMS.txt` |
 | 2026-11-01 | `pytest -q` (v0.4.6) | **184 passed, 1 skipped**, 6 deprecation warnings (`pygame.image.tostring`) |

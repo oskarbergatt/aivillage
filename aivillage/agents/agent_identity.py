@@ -149,6 +149,13 @@ class AgentIdentityMixin:
 
     def _scheduled_block(self, clock) -> str:
         block = block_at(self.persona, clock.now)
+        # A scheduled shift is a hard hand-off.  Lunch may be interrupted at
+        # the end of its hour, and a lingering emergency nap must not strand
+        # workers at home for the rest of the afternoon.
+        if block in ("work", "school", "market", "repair"):
+            self.napping = False
+            self.eating = False
+            return block
         if self.napping:
             if self.needs.energy < 68:
                 return "sleep"

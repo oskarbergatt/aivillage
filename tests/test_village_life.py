@@ -79,6 +79,26 @@ def test_ambient_talk_yields_to_work_schedule(app, monkeypatch):
     assert agent.intent == "work"
 
 
+def test_13_work_shift_overrides_a_lingering_meal_and_nap(app):
+    agent = app.agent_by_key["pip"]
+    app.clock._sim = datetime(2026, 10, 29, 13, 0)
+    agent.state = "meal"
+    agent.block = "meal"
+    agent.intent = "meal"
+    agent.eating = True
+    agent.napping = True
+    agent.needs.energy = 30.0
+    agent.needs.hunger = 40.0
+
+    agent.update(0.1, app)
+
+    assert agent.block == "work"
+    assert agent.intent == "work"
+    assert agent.state in ("walk", "work")
+    assert not agent.eating
+    assert not agent.napping
+
+
 def test_spoken_conversation_is_remembered_and_offered_to_model(app):
     first, second = app.agent_by_key["pip"], app.agent_by_key["orin"]
     first.begin_talk(second, 20)
