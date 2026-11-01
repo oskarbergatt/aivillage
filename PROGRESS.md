@@ -3,7 +3,7 @@
 Living checklist. Update it when a milestone lands or a gap closes.
 Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md)
 
-**Last updated:** 2026-10-31 · **Tests:** 166 passed, 1 skipped (`pytest -q`) · **Version:** 0.4.1
+**Last updated:** 2026-11-01 · **Tests:** 168 passed, 1 skipped (`pytest -q`) · **Version:** 0.4.2
 
 ---
 
@@ -97,11 +97,11 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 - [x] Night lighting, warm window pools, lamp glow, additive light overlay
 - [x] Toasts, chronicle panel, dispatch card, setup card, chat panel, jobs panel
 - [x] Real holiday/festival calendar, Saturday market/Monday routines, forecast-aware work planning
-- [x] 166 passing automated tests (world, assets, reality, news, setup, gateway, app, jobs/self, LLM CLIs, module layout, builds)
+- [x] 168 passing automated tests (world, assets, reality, news, setup, gateway, app, jobs/self, LLM CLIs, module layout, builds)
 - [x] In-app AI provider chooser with localized instructions and restart-safe non-secret persistence
 - [x] Double-click Windows launcher, setup links and opt-in local Ollama model download
 - [x] Native desktop build script and Windows/macOS/Linux CI workflow; bundled apps use per-user data
-- [x] Packaged builds check GitHub releases and offer a user-controlled update page; tagged CI builds publish installers
+- [x] Packaged builds check releases, download platform installers on request, verify SHA-256, and launch installer prompts; tagged CI publishes checksummed assets
 - [x] Native installer builders: branded Inno wizard, macOS disk image, and Debian desktop package
 - [x] Five save slots via F3; autosave follows the last successfully saved or loaded slot
 - [x] Player dialogue history persists in saves; ambient group conversations use the scheduler
@@ -118,7 +118,7 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 
 | Date | Check | Result |
 |---|---|---|
-| 2026-10-31 | `pytest -q` | **166 passed, 1 skipped**, 6 deprecation warnings (`pygame.image.tostring`) |
+| 2026-11-01 | `pytest -q` | **168 passed, 1 skipped**, 6 deprecation warnings (`pygame.image.tostring`) |
 | 2026-10-31 | `pytest -q` | **163 passed, 1 skipped**, 6 deprecation warnings (`pygame.image.tostring`) |
 | 2026-10-31 | Parallel conversations | Isolated Codex game displayed two conversations with both SAPI workers active; audible output not independently verified. |
 | 2026-10-31 | Live Codex conversation | Isolated game with two nearby free villagers generated and displayed a real exchange; source save data untouched |

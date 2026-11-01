@@ -113,6 +113,8 @@ class VillageApp(ChatMixin, AlertCourierMixin, PhotoExportMixin, VillageServices
         self.inside_house = ""
         self.update_url = ""
         self.update_version = ""
+        self.update_info = None
+        self.update_installing = False
         self._update_result = None
         self.follow_selected = False
         self.chat = ChatState()
@@ -182,7 +184,8 @@ class VillageApp(ChatMixin, AlertCourierMixin, PhotoExportMixin, VillageServices
         if getattr(__import__("sys"), "frozen", False):
             from .update_check import check_latest
             from . import __version__
-            check_latest(lambda version, url: setattr(self, "_update_result", (version, url, __version__)))
+            check_latest(lambda result: setattr(self, "_update_result",
+                                                ("check", result, __version__)))
 
         self._plan_visitors()
         if not new_game:

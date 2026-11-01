@@ -218,12 +218,24 @@ class VillagePersistenceMixin:
             self._maybe_self_direction(frame_dt)
             self._tick_script()
         if self._update_result:
-            version, url, current = self._update_result
+            kind, result, current = self._update_result
             self._update_result = None
-            from .update_check import newer_version
-            if newer_version(version, current):
-                self.update_version, self.update_url = version, url
-                self.toast(f"Version {version} available · press U for release", 12.0)
+            if kind == "check":
+                from .update_check import newer_version
+                if newer_version(result["version"], current):
+                    self.update_info = result
+                    self.update_version, self.update_url = result["version"], result["url"]
+                    if result.get("installer"):
+                        self.toast(f"Version {self.update_version} available · press U to update", 12.0)
+                    else:
+                        self.toast(f"Version {self.update_version} available; installer unavailable", 12.0)
+            else:
+                self.update_installing = False
+                success, message = result
+                if success:
+                    self.toast("Installer opened; follow its prompts to finish updating", 10.0)
+                else:
+                    self.toast(f"Update failed: {message}", 10.0)
         self._check_day()
         for toast in list(self.toasts):
             toast[1] -= frame_dt

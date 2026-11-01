@@ -167,8 +167,9 @@ At a new in-game day, a real model can continue a saved village story using rece
 the current story is included as background in conversations. Turn this off with
 `social.story_arcs = false`. It makes an additional model request per day and may incur charges.
 Packaged builds check GitHub Releases in the background. When a newer version is found, press **U**
-to open its release page and choose the platform installer; updates are never silently installed or
-allowed to replace saves/configuration. Maintainers publish releases by pushing a `v*` tag.
+to download and verify the matching platform installer, then launch its normal installer prompts.
+Updates are never silently installed or allowed to replace saves/configuration. Maintainers publish
+releases by pushing a `v*` tag; releases include SHA-256 checksums used by the updater.
 Click a house entrance to view its cutaway interior; press **Esc** to return to the village.
 Up to three independent villager conversations can overlap, with sequential turns within each
 conversation and separate Windows SAPI playback. Two background model requests may run at once,
