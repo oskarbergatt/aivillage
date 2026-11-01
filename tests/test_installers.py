@@ -43,6 +43,8 @@ def test_windows_installer_has_branded_per_user_wizard(tmp_path, monkeypatch):
         assert "WizardBackImageFile=" in script and "WizardBackImageOpacity=90" in script
         assert "SetupIconFile=" in script and "IconFilename:" in script
         assert "{localappdata}" in script
+        assert "Uninstallable=yes" in script
+        assert 'Filename: "{uninstallexe}"' in script
         assert (work / "wizard.bmp").read_bytes().startswith(b"BM")
         (work / "aivillage-setup.exe").write_bytes(b"installer")
     monkeypatch.setattr(platforms.subprocess, "run", run)

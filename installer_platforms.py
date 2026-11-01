@@ -44,6 +44,7 @@ AppId=aivillage.desktop
 AppName=aivillage
 AppVersion={version}
 AppPublisher=aivillage
+Uninstallable=yes
 DefaultDirName={{localappdata}}\\Programs\\aivillage
 DefaultGroupName=aivillage
 PrivilegesRequired=lowest
@@ -66,6 +67,7 @@ Source: "{icon}"; DestDir: "{{app}}"; Flags: ignoreversion
 
 [Icons]
 Name: "{{group}}\\aivillage"; Filename: "{{app}}\\aivillage.exe"; IconFilename: "{{app}}\\aivillage.ico"
+Name: "{{group}}\\Uninstall aivillage"; Filename: "{{uninstallexe}}"
 Name: "{{autodesktop}}\\aivillage"; Filename: "{{app}}\\aivillage.exe"; IconFilename: "{{app}}\\aivillage.ico"; Tasks: desktopicon
 
 [Tasks]

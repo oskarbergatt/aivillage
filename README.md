@@ -228,6 +228,17 @@ the app in `dist/<platform>-<architecture>/` and will not overwrite an existing 
 
 After building, run `python build_installer.py` (or double-click **`Build installer.cmd`** on
 Windows) to create a Windows installer, macOS disk image, or Debian package in `dist/installers/`.
+
+### Uninstalling
+
+- **Windows:** use Settings → Apps → Installed apps → aivillage, or Start → aivillage →
+  **Uninstall aivillage**. This removes the installed program, not your village data.
+- **macOS:** quit aivillage and move `aivillage.app` from Applications to Trash.
+- **Debian/Ubuntu:** run `sudo apt remove aivillage`.
+
+Saves and configuration are kept under your user data folder when uninstalling. To remove them too,
+delete the `aivillage` data folder in your platform's application-support location only after backing
+up anything you want to keep.
 Windows requires Inno Setup 6.7 or newer, macOS requires `dmgbuild`, and Debian packaging requires
 `dpkg-deb`.
 
