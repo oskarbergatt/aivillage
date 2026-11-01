@@ -237,16 +237,18 @@ class VillagePersistenceMixin:
                     self.update_info = result
                     self.update_version, self.update_url = result["version"], result["url"]
                     if result.get("installer"):
-                        self.toast(f"Version {self.update_version} available · press U to update", 12.0)
+                        self.toast(self.i18n.t("update.available",
+                                               version=self.update_version), 12.0)
                     else:
-                        self.toast(f"Version {self.update_version} available; installer unavailable", 12.0)
+                        self.toast(self.i18n.t("update.installer_unavailable",
+                                               version=self.update_version), 12.0)
             else:
                 self.update_installing = False
-                success, message = result
+                success, _message = result
                 if success:
-                    self.toast("Installer opened; follow its prompts to finish updating", 10.0)
+                    self.toast(self.i18n.t("update.installer_opened"), 10.0)
                 else:
-                    self.toast(f"Update failed: {message}", 10.0)
+                    self.toast(self.i18n.t("update.failed"), 10.0)
         self._check_day()
         for toast in list(self.toasts):
             toast[1] -= frame_dt

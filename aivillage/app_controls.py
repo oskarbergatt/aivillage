@@ -244,7 +244,8 @@ class VillageControlsMixin:
             if self.update_info and self.update_info.get("installer"):
                 if not self.update_installing:
                     self.update_installing = True
-                    self.toast(f"Downloading and verifying v{self.update_version}…", 12.0)
+                    self.toast(self.i18n.t("update.downloading",
+                                           version=self.update_version), 12.0)
                     from .update_check import install_update
                     install_update(self.update_info, lambda success, error: setattr(
                         self, "_update_result", ("install", (success, error), "")))
@@ -253,7 +254,7 @@ class VillageControlsMixin:
                 try:
                     webbrowser.open(self.update_url)
                 except Exception:
-                    self.toast("Could not open the release page")
+                    self.toast(self.i18n.t("update.open_error"))
         elif e.key == pygame.K_n:
             self.clock.sleep_until_dawn()
             self.toast(self.i18n.t("ui.sleep_until_dawn"))

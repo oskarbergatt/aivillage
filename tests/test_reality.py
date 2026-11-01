@@ -43,6 +43,13 @@ def test_all_used_keys_exist():
         for lang in ("en", "de"):
             i18n.set_language(lang)
             assert i18n.t(key) != key, (lang, key)
+    for lang, fragment in (("en", "Downloading"), ("de", "heruntergeladen")):
+        i18n.set_language(lang)
+        text = i18n.t("update.downloading", version="9.9.9")
+        assert fragment in text and "9.9.9" in text
+        for key in ("update.available", "update.installer_unavailable",
+                    "update.installer_opened", "update.failed", "update.open_error"):
+            assert i18n.t(key, version="9.9.9") != key
 
 
 def test_job_task_labels_are_translated_and_unknown_text_is_preserved():
