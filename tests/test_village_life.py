@@ -107,6 +107,7 @@ def test_ambient_talk_yields_to_work_schedule(app, monkeypatch):
 
 def test_13_work_shift_overrides_a_lingering_meal_and_nap(app):
     agent = app.agent_by_key["pip"]
+    app.weather.condition = "clear"
     app.clock._sim = datetime(2026, 10, 29, 13, 0)
     agent.state = "meal"
     agent.block = "meal"
