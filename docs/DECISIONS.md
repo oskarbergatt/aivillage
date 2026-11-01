@@ -46,7 +46,8 @@ communal > break > free > idle) but is not a numeric score. Forecasts are not co
 
 **Planned:** multi-turn exchanges, persistent threads across days, group chats at plaza lunch.
 **Actual:** an ambient conversation is one LLM call that may contain several turns; the result is
-played as sequential bubbles. Pairings are throttled by `social.ambient_budget_s`. Memories and
+played as sequential bubbles. Only one ambient conversation runs at once; pairings are throttled by
+`social.ambient_budget_s` (90 seconds by default). Memories and
 affinity persist; conversation objects do not. The plaza "assembly" is used for traveller
 announcements, not lunch group chat.
 

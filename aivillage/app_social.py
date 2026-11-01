@@ -10,6 +10,14 @@ from .app_shared import (
 
 
 class VillageSocialMixin:
+    def _ambient_cooldown(self) -> float:
+        return max(30.0, min(1800.0, float(
+            self.config.get("social.ambient_budget_s", 90) or 90)))
+
+    @staticmethod
+    def _ambient_line_gap(text: str) -> float:
+        return max(7.0, min(12.0, 5.5 + len(text) * 0.06))
+
     def _social_speed(self) -> float:
         return 1.0 if self.clock.live else max(1.0, self.clock.sim_speed)
 
@@ -29,8 +37,8 @@ class VillageSocialMixin:
 
     def _maybe_social(self, dt: float) -> None:
         self.social_timer -= dt
-        if (self.social_timer > 0 or self.ambient_pending >= 2
-                or self._social_track_count() + self.ambient_pending >= 3 or self.chat.active
+        if (self.social_timer > 0 or self.ambient_pending > 0
+                or self._social_track_count() > 0 or self.chat.active
                 or self.show_chronicle):
             return
         if not self.config.get("llm.ambient_dialogue", True) or not self.llm.available:
@@ -59,7 +67,7 @@ class VillageSocialMixin:
         a.begin_talk(b, self._social_wait())
         b.begin_talk(a, self._social_wait())
         self.ambient_pending += 1
-        self.social_timer = 2.0
+        self.social_timer = self._ambient_cooldown()
         generation = self._social_generation
         topic = ""
         recent = a.memory.recent(1, "news") or b.memory.recent(1, "news")
@@ -94,7 +102,7 @@ class VillageSocialMixin:
             script: list[tuple[Agent, str, float]] = []
             speakers = {"a": a, "b": b, "you": a, a.key.casefold(): a, b.key.casefold(): b,
                         a.name.casefold(): a, b.name.casefold(): b}
-            for i, item in enumerate(lines[:5]):
+            for i, item in enumerate(lines[:4]):
                 if not isinstance(item, dict):
                     continue
                 text = str(item.get("text", "")).strip()
@@ -105,7 +113,7 @@ class VillageSocialMixin:
                 if who is None:
                     continue
                 script.append((who, text[:240], now))
-                now += max(2.6, min(6.0, len(text) * 0.05 + 2.2))
+                now += self._ambient_line_gap(text)
             if not script:
                 a.end_talk()
                 b.end_talk()
@@ -117,8 +125,7 @@ class VillageSocialMixin:
             b.talk_timer = (now - time.time() + 3) * self._social_speed()
             a.memory.adjust(b.key, 0.04)
             b.memory.adjust(a.key, 0.04)
-            self.social_timer = min(8.0, max(1.0, float(
-                self.config.get("social.ambient_budget_s", 45))))
+            self.social_timer = self._ambient_cooldown() + max(0.0, now - time.time())
 
         self.llm.submit(
             "exchange",
@@ -138,7 +145,7 @@ class VillageSocialMixin:
         for i, agent in enumerate(members):
             agent.begin_talk(members[(i + 1) % len(members)], self._social_wait())
         self.ambient_pending += 1
-        self.social_timer = 2.0
+        self.social_timer = self._ambient_cooldown()
         generation = self._social_generation
 
         def done(data: dict | None, error: str) -> None:
@@ -159,14 +166,14 @@ class VillageSocialMixin:
                 by_name.setdefault(chr(ord("a") + index), agent)
             script = []
             at = time.time() + 0.4
-            for item in (lines if isinstance(lines, list) else [])[:8]:
+            for item in (lines if isinstance(lines, list) else [])[:5]:
                 if not isinstance(item, dict):
                     continue
                 who = by_name.get(str(item.get("speaker", "")).strip().casefold())
                 text = str(item.get("text", "")).strip()[:240]
                 if who and text:
                     script.append((who, text, at))
-                    at += max(2.6, min(6.0, len(text) * 0.05 + 2.2))
+                    at += self._ambient_line_gap(text)
             if not script:
                 for agent in members:
                     agent.end_talk()
@@ -179,7 +186,7 @@ class VillageSocialMixin:
                 for other in members:
                     if other is not agent:
                         agent.memory.adjust(other.key, 0.04)
-            self.social_timer = min(8.0, max(1.0, float(self.config.get("social.ambient_budget_s", 45))))
+            self.social_timer = self._ambient_cooldown() + max(0.0, at - time.time())
 
         context = self._prompt_ctx(None)
         if self.config.get("social.threads", True):

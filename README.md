@@ -171,9 +171,11 @@ to download and verify the matching platform installer, then launch its normal i
 Updates are never silently installed or allowed to replace saves/configuration. Maintainers publish
 releases by pushing a `v*` tag; releases include SHA-256 checksums used by the updater.
 Click a house entrance to view its cutaway interior; press **Esc** to return to the village.
-Up to three independent villager conversations can overlap, with sequential turns within each
-conversation and separate Windows SAPI playback. Two background model requests may run at once,
-which can increase provider usage or local model load. Under
+Ambient villager conversations run one at a time, with 2–4 pair lines or 3–5 group lines spaced
+7–12 seconds apart, followed by a 90-second quiet period by default. Change
+`social.ambient_budget_s` (minimum 30 seconds) in `config.toml` to adjust the pause, or set
+`llm.ambient_dialogue = false` to stop automatic conversations. This limits both rapid chatter and
+background model usage. Under
 **F3 → CHAT MODEL**, you can optionally enter a different model ID for automatic conversations;
 it must already be available to the selected provider. Leave the field empty to use the normal
 model. With the Codex CLI, background conversations request low reasoning effort by default;

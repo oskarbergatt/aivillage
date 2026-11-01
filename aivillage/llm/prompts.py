@@ -108,7 +108,7 @@ def chat_user(p: Persona, message: str, ctx: dict) -> str:
 def exchange_system(language: str) -> str:
     return (
         "You write short, natural village conversations between two characters. "
-        f"Write in {lang(language)}. 3 to 6 lines total, each 1-2 short sentences. "
+        f"Write in {lang(language)}. 2 to 4 lines total, each 1 short sentence. "
         "Characters interrupt, misunderstand, tease and drift off topic like real people. "
         "Never mention AI or the modern world."
     )
@@ -133,8 +133,8 @@ def exchange_user(a: Persona, b: Persona, ctx: dict, topic: str = "") -> str:
 def group_system(language: str) -> str:
     return (
         "You write a short, lively village conversation between three or four "
-        f"characters gathered in the square. Write in {lang(language)}. 4 to 8 lines "
-        "total, each 1-2 short sentences. They interrupt, joke, disagree and drift "
+        f"characters gathered in the square. Write in {lang(language)}. 3 to 5 lines "
+        "total, each 1 short sentence. They interrupt, joke, disagree and drift "
         "off topic. Never mention AI or the modern world."
     )
 
