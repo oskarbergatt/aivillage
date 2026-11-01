@@ -1,6 +1,6 @@
 [project]
 name = "aivillage"
-version = "0.4.14"
+version = "0.4.15"
 description = "A pixel-art village of AI agents that lives on your real clock, weather and news."
 requires-python = ">=3.11,<3.13"
 dependencies = [

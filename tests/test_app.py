@@ -190,7 +190,7 @@ def test_secret_dev_mode_pins_resources_and_refills_needs(app):
     from types import SimpleNamespace
 
     assert not app.dev_mode
-    app._key(SimpleNamespace(key=pygame.K_d,
+    app._key(SimpleNamespace(key=pygame.K_F9,
                              mod=pygame.KMOD_CTRL | pygame.KMOD_SHIFT,
                              unicode="",))
     assert app.dev_mode
@@ -206,7 +206,7 @@ def test_secret_dev_mode_pins_resources_and_refills_needs(app):
     app._key(SimpleNamespace(key=pygame.K_F5, mod=0, unicode=""))
     assert agent.needs.hunger == agent.needs.energy == 100.0
 
-    app._key(SimpleNamespace(key=pygame.K_d,
+    app._key(SimpleNamespace(key=pygame.K_F9,
                              mod=pygame.KMOD_CTRL | pygame.KMOD_SHIFT,
                              unicode="",))
     assert not app.dev_mode
@@ -245,7 +245,7 @@ def test_help_window_toggles_and_draws(app):
 def test_help_text_explains_update_and_work_times(app):
     for lang in ("en", "de"):
         app.i18n.set_language(lang)
-        assert "0.4.14" in app.i18n.t("help.update_title")
+        assert "0.4.15" in app.i18n.t("help.update_title")
         assert app.i18n.t("help.update_body") != "help.update_body"
         assert "07:30" in app.i18n.t("help.work_day")
         assert "19:00" in app.i18n.t("help.work_night")

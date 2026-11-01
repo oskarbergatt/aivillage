@@ -14,7 +14,7 @@ def pin_resources(app) -> None:
 
 def handle_dev_key(app, event) -> bool:
     """Handle the hidden toggle and optional test shortcuts."""
-    toggle = (event.key == pygame.K_d
+    toggle = (event.key == pygame.K_F9
               and (event.mod & (pygame.KMOD_CTRL | pygame.KMOD_SHIFT))
               == (pygame.KMOD_CTRL | pygame.KMOD_SHIFT))
     if toggle:
