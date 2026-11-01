@@ -139,6 +139,7 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 
 | Date | Check | Result |
 |---|---|---|
+| 2026-11-01 | v0.4.13 release CI | Test matrix passed; Windows, macOS and Linux builds and release publication passed |
 | 2026-11-01 | `pytest -q` (v0.4.13) | **190 passed, 1 skipped** |
 | 2026-11-01 | v0.4.12 release CI | Test matrix passed; Windows, macOS and Linux builds and release publication passed |
 | 2026-11-01 | `pytest -q` (v0.4.12) | **189 passed, 1 skipped** |
