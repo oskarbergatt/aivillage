@@ -130,6 +130,8 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 
 | Date | Check | Result |
 |---|---|---|
+| 2026-11-01 | v0.4.8 release CI | Tests and all three platform builds passed; release published with six assets |
+| 2026-11-01 | v0.4.8 checksums | All six downloaded assets matched `SHA256SUMS.txt` |
 | 2026-11-01 | `pytest -q` (v0.4.8) | **186 passed, 1 skipped** |
 | 2026-11-01 | v0.4.7 release CI | Tests and all three platform builds passed; release published with six assets |
 | 2026-11-01 | v0.4.7 checksums | All six downloaded assets matched `SHA256SUMS.txt` |
