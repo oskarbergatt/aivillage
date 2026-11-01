@@ -186,6 +186,35 @@ def test_hud_buttons_are_clickable(app):
         assert hits[action].w > 0
 
 
+def test_secret_dev_mode_pins_resources_and_refills_needs(app):
+    from types import SimpleNamespace
+
+    assert not app.dev_mode
+    app._key(SimpleNamespace(key=pygame.K_d,
+                             mod=pygame.KMOD_CTRL | pygame.KMOD_SHIFT,
+                             unicode="",))
+    assert app.dev_mode
+    assert all(app.stats[key] == 999_999
+               for key in ("wood", "stone", "food", "coin"))
+
+    app.stats["wood"] = 0
+    app._update(0.0)
+    assert app.stats["wood"] == 999_999
+
+    agent = app.agents[0]
+    agent.needs.hunger = agent.needs.energy = 1.0
+    app._key(SimpleNamespace(key=pygame.K_F5, mod=0, unicode=""))
+    assert agent.needs.hunger == agent.needs.energy == 100.0
+
+    app._key(SimpleNamespace(key=pygame.K_d,
+                             mod=pygame.KMOD_CTRL | pygame.KMOD_SHIFT,
+                             unicode="",))
+    assert not app.dev_mode
+    app.stats["wood"] = 3
+    app._update(0.0)
+    assert app.stats["wood"] == 3
+
+
 def test_chronicle_and_toasts_draw(app):
     app.add_chronicle("The well was repaired by Bram.", "build")
     app.toast("A test toast")
@@ -216,7 +245,7 @@ def test_help_window_toggles_and_draws(app):
 def test_help_text_explains_update_and_work_times(app):
     for lang in ("en", "de"):
         app.i18n.set_language(lang)
-        assert "0.4.12" in app.i18n.t("help.update_title")
+        assert "0.4.13" in app.i18n.t("help.update_title")
         assert app.i18n.t("help.update_body") != "help.update_body"
         assert "07:30" in app.i18n.t("help.work_day")
         assert "19:00" in app.i18n.t("help.work_night")

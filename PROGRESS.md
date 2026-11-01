@@ -3,7 +3,7 @@
 Living checklist. Update it when a milestone lands or a gap closes.
 Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md)
 
-**Last updated:** 2026-11-01 · **Tests:** 189 passed, 1 skipped (`pytest -q`) · **Version:** 0.4.12
+**Last updated:** 2026-11-01 · **Tests:** 190 passed, 1 skipped (`pytest -q`) · **Version:** 0.4.13
 
 ---
 
@@ -129,6 +129,8 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 - [x] Sunday work hours vary by job: outdoor trades 10:00–14:00, indoor trades 11:00–15:00;
       children and nocturnal villagers retain their usual schedules.
 - [x] Click anywhere on a house to view its cutaway interior; Esc returns to the village.
+- [x] Hidden developer mode pins materials to unlimited stock and offers need refill, instant
+      town-hall completion, and visitor-spawn shortcuts; it is session-only.
 - [x] README includes a headless mock-provider preview (F12 also writes captures to `data/`)
 
 ---
@@ -137,6 +139,7 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 
 | Date | Check | Result |
 |---|---|---|
+| 2026-11-01 | `pytest -q` (v0.4.13) | **190 passed, 1 skipped** |
 | 2026-11-01 | v0.4.12 release CI | Test matrix passed; Windows, macOS and Linux builds and release publication passed |
 | 2026-11-01 | `pytest -q` (v0.4.12) | **189 passed, 1 skipped** |
 | 2026-11-01 | v0.4.11 release verification | All platform builds and six asset checksums passed; CI test matrix passed after making the existing work-shift test explicitly dry-weather |

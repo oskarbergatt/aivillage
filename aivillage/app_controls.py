@@ -7,6 +7,7 @@ from .app_shared import (
     pygame,
     slot_path,
 )
+from .app_dev import handle_dev_key
 
 from . import app as _public_module
 
@@ -201,6 +202,8 @@ class VillageControlsMixin:
                 self.ui.scroll(-1)
             elif e.key == pygame.K_UP:
                 self.ui.scroll(1)
+            return
+        if handle_dev_key(self, e):
             return
 
         if e.key == pygame.K_ESCAPE:

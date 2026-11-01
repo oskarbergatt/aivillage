@@ -111,6 +111,9 @@ class HudMixin:
         self._panel(screen, rect)
         draw_text(screen, TITLE, (rect.x + 14, rect.y + 10), 16, P["ui_accent"],
                   chunky=True)
+        if getattr(app, "dev_mode", False):
+            draw_text(screen, t("dev.badge"), (rect.x + 112, rect.y + 12),
+                      8, P["ui_warn"])
         badge = t("ui.live") if app.clock.is_live else (
             t("ui.paused") if app.clock.paused else f"{app.clock.sim_speed}x")
         badge_colour = P["ui_good"] if app.clock.is_live else (
@@ -153,11 +156,12 @@ class HudMixin:
                 ("stone", P["stone_l"], app.stats["stone"]),
                 ("food", P["ui_good"], app.stats["food"]),
                 ("coin", P["ui_accent"], app.stats["coin"])):
-            chip_w = 9 + 22 + get_font(16).size(str(int(value)))[0] + \
+            shown = "∞" if getattr(app, "dev_mode", False) else str(int(value))
+            chip_w = 9 + 22 + get_font(16).size(shown)[0] + \
                 get_font(16).size(t(f"ui.{key}"))[0] + 14
             if x + chip_w > rect.right - 10:
                 break
-            x += self._chip(screen, (x, y), t(f"ui.{key}"), colour, str(int(value)))
+            x += self._chip(screen, (x, y), t(f"ui.{key}"), colour, shown)
             x += 8
 
     def _top_right(self, screen, app, w, h) -> None:

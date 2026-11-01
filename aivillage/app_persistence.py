@@ -1,6 +1,8 @@
 """Extracted methods for VillageApp."""
 from __future__ import annotations
 
+from .app_dev import pin_resources
+
 from .app_shared import (
     Agent,
     JOBS,
@@ -205,6 +207,8 @@ class VillagePersistenceMixin:
                 agent.update(dt, self)
             except Exception:
                 traceback.print_exc()
+
+        pin_resources(self)
 
         for visitor in list(self.visitors):
             try:
