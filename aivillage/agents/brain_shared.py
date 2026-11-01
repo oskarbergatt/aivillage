@@ -47,6 +47,14 @@ def block_at(persona: Persona, when) -> str:
     minute = when.hour * 60 + when.minute
     routine = routine_key(when)
     if not persona.nocturnal:
+        # Sundays keep a short village workday, even when a fixed holiday
+        # (such as All Saints' Day) falls on the same date.
+        if when.weekday() == 6:
+            if 7 * 60 <= minute < 22 * 60:
+                if not persona.is_child and 10 * 60 <= minute < 14 * 60:
+                    return "work"
+                return "free"
+            return "sleep"
         if routine in ("holiday", "festival") or is_rest_day(when):
             return "free" if 7 * 60 <= minute < 22 * 60 else "sleep"
         if not persona.is_child:

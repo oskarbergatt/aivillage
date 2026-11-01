@@ -216,7 +216,7 @@ def test_help_window_toggles_and_draws(app):
 def test_help_text_explains_update_and_work_times(app):
     for lang in ("en", "de"):
         app.i18n.set_language(lang)
-        assert "0.4.9" in app.i18n.t("help.update_title")
+        assert "0.4.10" in app.i18n.t("help.update_title")
         assert app.i18n.t("help.update_body") != "help.update_body"
         assert "07:30" in app.i18n.t("help.work_day")
         assert "19:00" in app.i18n.t("help.work_night")

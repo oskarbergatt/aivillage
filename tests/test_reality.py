@@ -127,11 +127,14 @@ def test_clock_never_moves_when_paused(config):
     assert clock.now == before
 
 
-def test_sunday_override_makes_a_day_off(config):
+def test_sunday_has_reduced_operations_even_on_all_saints(config):
     from aivillage.agents.brain import block_at
     from aivillage.agents.roster import BY_KEY
-    sunday = datetime(2026, 11, 1, 10, 0)
-    assert block_at(BY_KEY["pip"], sunday) == "free"
+    assert block_at(BY_KEY["pip"], datetime(2026, 11, 1, 9, 0)) == "free"
+    assert block_at(BY_KEY["pip"], datetime(2026, 11, 1, 10, 0)) == "work"
+    assert block_at(BY_KEY["pip"], datetime(2026, 11, 1, 13, 59)) == "work"
+    assert block_at(BY_KEY["pip"], datetime(2026, 11, 1, 14, 0)) == "free"
+    assert block_at(BY_KEY["nettle"], datetime(2026, 11, 1, 11, 0)) == "free"
     monday = datetime(2026, 11, 2, 10, 0)
     assert block_at(BY_KEY["pip"], monday) == "work"
 
