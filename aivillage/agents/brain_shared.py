@@ -51,8 +51,12 @@ def block_at(persona: Persona, when) -> str:
         # (such as All Saints' Day) falls on the same date.
         if when.weekday() == 6:
             if 7 * 60 <= minute < 22 * 60:
-                if not persona.is_child and 10 * 60 <= minute < 14 * 60:
-                    return "work"
+                if not persona.is_child:
+                    job = job_for(persona.job)
+                    start, end = ((11 * 60, 15 * 60) if job.indoor
+                                  else (10 * 60, 14 * 60))
+                    if start <= minute < end:
+                        return "work"
                 return "free"
             return "sleep"
         if routine in ("holiday", "festival") or is_rest_day(when):

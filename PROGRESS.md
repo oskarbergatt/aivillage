@@ -3,7 +3,7 @@
 Living checklist. Update it when a milestone lands or a gap closes.
 Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md)
 
-**Last updated:** 2026-11-01 · **Tests:** 188 passed, 1 skipped (`pytest -q`) · **Version:** 0.4.10
+**Last updated:** 2026-11-01 · **Tests:** 188 passed, 1 skipped (`pytest -q`) · **Version:** 0.4.11
 
 ---
 
@@ -126,6 +126,8 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
       while the village is still dry. All registered work and routine labels display in German.
 - [x] Sundays have reduced adult operations from 10:00 to 14:00, including when coinciding with a
       fixed rest-day holiday; children remain off duty.
+- [x] Sunday work hours vary by job: outdoor trades 10:00–14:00, indoor trades 11:00–15:00;
+      children and nocturnal villagers retain their usual schedules.
 - [x] README includes a headless mock-provider preview (F12 also writes captures to `data/`)
 
 ---
@@ -134,6 +136,7 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 
 | Date | Check | Result |
 |---|---|---|
+| 2026-11-01 | `pytest -q` (v0.4.11) | **188 passed, 1 skipped** |
 | 2026-11-01 | Sunday schedule tests | Reduced hours and All Saints' Day Sunday override passed |
 | 2026-11-01 | v0.4.9 release CI | Tests and all three platform builds passed; release published with six assets |
 | 2026-11-01 | v0.4.9 checksums | All six downloaded assets matched `SHA256SUMS.txt` |
