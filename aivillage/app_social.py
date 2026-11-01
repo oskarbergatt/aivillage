@@ -10,6 +10,8 @@ from .app_shared import (
 
 
 class VillageSocialMixin:
+    _AMBIENT_ANSWER_LEAD = 1.0
+
     def _ambient_cooldown(self) -> float:
         return max(10.0, min(600.0, float(
             self.config.get("social.ambient_budget_s", 20) or 20)))
@@ -214,7 +216,11 @@ class VillageSocialMixin:
             script.pop(0)
             return
         if voice.speak_ambient and voice.is_busy():
-            return
+            # Queue the next turn during the last second of the current one,
+            # so the reply is ready the moment the other speaker stops.
+            ending_within = getattr(voice, "ending_within", None)
+            if not (callable(ending_within) and ending_within(self._AMBIENT_ANSWER_LEAD)):
+                return
         script.pop(0)
         agent.say(text, 5.6 * self._social_speed())
         voice.speak(text, agent.key, self.i18n.language, ambient=True)

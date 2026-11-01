@@ -3,7 +3,7 @@
 Living checklist. Update it when a milestone lands or a gap closes.
 Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md)
 
-**Last updated:** 2026-11-01 · **Tests:** 170 passed, 1 skipped (`pytest -q`) · **Version:** 0.4.3
+**Last updated:** 2026-11-01 · **Tests:** 172 passed, 1 skipped (`pytest -q`) · **Version:** 0.4.4
 
 ---
 
@@ -54,7 +54,7 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 - [x] Separate optional ambient-dialogue worker, configurable conversation model and low-effort Codex conversations
 - [x] Provider-agnostic prompts; persona-first, strict-JSON replies with text fallback
 - [x] Player chat (T or inspector button) with typing, paste, history, TTS
-- [x] Ambient exchanges are bounded to 2–4 pair / 3–5 group lines, slowed to 7–12 second turns, throttled by a configurable interval, and capped at three concurrent lanes
+- [x] Ambient exchanges are bounded to 2–4 pair / 3–5 group lines, slowed to 7–12 second turns, throttled by a configurable interval, capped at three concurrent lanes, and prepare the next answer during the final second of the current line
 - [x] Affinity/mood/memory consequences of conversations
 - [x] Spoken exchanges are saved as social memories and made available to later pair conversations
 - [x] English/German locale tables with key parity, runtime switch (F2)
@@ -118,6 +118,7 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 
 | Date | Check | Result |
 |---|---|---|
+| 2026-11-01 | `pytest -q` | **172 passed, 1 skipped**, 6 deprecation warnings (`pygame.image.tostring`) |
 | 2026-11-01 | `pytest -q` | **170 passed, 1 skipped**, 6 deprecation warnings (`pygame.image.tostring`) |
 | 2026-11-01 | `pytest -q` | **168 passed, 1 skipped**, 6 deprecation warnings (`pygame.image.tostring`) |
 | 2026-10-31 | `pytest -q` | **163 passed, 1 skipped**, 6 deprecation warnings (`pygame.image.tostring`) |

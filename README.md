@@ -172,9 +172,10 @@ Updates are never silently installed or allowed to replace saves/configuration. 
 releases by pushing a `v*` tag; releases include SHA-256 checksums used by the updater.
 Click a house entrance to view its cutaway interior; press **Esc** to return to the village.
 Up to three ambient villager conversations can overlap. Each stays short (2–4 pair lines or 3–5 group
-lines), spaces turns 7–12 seconds apart, and waits 20 seconds by default before starting another.
-Change `social.ambient_budget_s` (10–600 seconds) in `config.toml` to adjust that interval, or set
-`llm.ambient_dialogue = false` to stop automatic conversations. Under
+lines), spaces turns 7–12 seconds apart, and prepares the next answer during the final second of the
+current speaker's line so there is no extra pause. Conversations wait 20 seconds by default before
+starting another. Change `social.ambient_budget_s` (10–600 seconds) in `config.toml` to adjust that
+interval, or set `llm.ambient_dialogue = false` to stop automatic conversations. Under
 **F3 → CHAT MODEL**, you can optionally enter a different model ID for automatic conversations;
 it must already be available to the selected provider. Leave the field empty to use the normal
 model. With the Codex CLI, background conversations request low reasoning effort by default;

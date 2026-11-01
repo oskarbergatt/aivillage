@@ -72,6 +72,44 @@ def test_muted_ambient_dialogue_does_not_wait_for_audio(app, monkeypatch):
     assert not app.script and a.bubble.text == "A line"
 
 
+def test_next_answer_is_prepared_in_the_final_second(app, monkeypatch):
+    a, b = app.agent_by_key["pip"], app.agent_by_key["orin"]
+    a.begin_talk(b, 20)
+    b.begin_talk(a, 20)
+    app.voice.speak_ambient = True
+    state = {"busy": True, "remaining": 2.0}
+    heard = []
+    monkeypatch.setattr(app.voice, "is_busy", lambda: state["busy"])
+    monkeypatch.setattr(app.voice, "ending_within",
+                        lambda seconds=1.0: state["remaining"] <= seconds)
+    monkeypatch.setattr(app.voice, "speak",
+                        lambda text, key, *args, **kwargs: heard.append((key, text)))
+    app.script = [(b, "Second line", time.time() - 1)]
+
+    app._tick_script()
+    assert heard == [] and len(app.script) == 1
+    state["remaining"] = 0.9
+    app._tick_script()
+    assert heard == [(b.key, "Second line")] and not app.script
+    app._tick_script()
+    assert heard == [(b.key, "Second line")]  # one request per turn
+
+
+def test_voice_reports_the_last_second_before_speech_ends(config):
+    config.set("voice.enabled", True)
+    service = VoiceService(config, SimpleNamespace(language="de"))
+    service._speaking_started = time.monotonic() - 2.0
+    service._speaking_seconds = 2.75
+    assert service.ending_within(1.0)
+    service._speaking_seconds = 4.0
+    assert not service.ending_within(1.0)
+    service._speaking_seconds = 2.75
+    service.muted = True
+    assert not service.ending_within(1.0)
+    assert (service._estimate_seconds("one two three four", 120)
+            > service._estimate_seconds("one two three four", 240))
+
+
 def test_voice_queue_tracks_each_speaker_until_playback_finishes(config, monkeypatch):
     import ctypes
     import sys

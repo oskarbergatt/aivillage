@@ -73,6 +73,8 @@ class VoiceService:
         self._pending = 0
         self._pending_since = 0.0
         self._speaking_key: str | None = None
+        self._speaking_started = 0.0
+        self._speaking_seconds = 0.0
         self._stalled = False
         self._thread: threading.Thread | None = None
         self._stop = threading.Event()
@@ -139,6 +141,21 @@ class VoiceService:
         with self._queue_lock:
             return (self.enabled and not self.muted and not self._stalled
                     and self._speaking_key == key)
+
+    @staticmethod
+    def _estimate_seconds(text: str, rate: int) -> float:
+        """Rough spoken length, used to prepare the next turn just in time."""
+        words = max(1, len(text.split()))
+        return max(0.8, words * 60.0 / max(90.0, float(rate)))
+
+    def ending_within(self, seconds: float = 1.0) -> bool:
+        """Whether the current utterance should end within *seconds*."""
+        with self._queue_lock:
+            if (not self.enabled or self.muted or self._stalled
+                    or not self._speaking_started):
+                return False
+            elapsed = time.monotonic() - self._speaking_started
+            return elapsed >= self._speaking_seconds - max(0.0, seconds)
 
     # -- speaking --------------------------------------------------------
     def profile_for(self, key: str) -> tuple[int, float, str]:
@@ -239,6 +256,9 @@ class VoiceService:
                 if vid:
                     engine.setProperty("voice", vid)
                 engine.say(text)
+                with self._queue_lock:
+                    self._speaking_started = time.monotonic()
+                    self._speaking_seconds = self._estimate_seconds(text, rate)
                 engine.runAndWait()
                 if self._speech_errors == previous_errors:
                     self.ok = True
@@ -251,6 +271,8 @@ class VoiceService:
                 with self._queue_lock:
                     self._pending = max(0, self._pending - 1)
                     self._speaking_key = None
+                    self._speaking_started = 0.0
+                    self._speaking_seconds = 0.0
                     self._pending_since = time.monotonic() if self._pending else 0.0
                     if self._stalled:
                         self._stalled = False
