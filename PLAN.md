@@ -174,8 +174,8 @@ Pair available villagers (tier 3/4) near each other. One LLM call → one exchan
 Sequential bubbles with speaker colour/portrait; face each other.
 Persistent threads across days: memories persist, thread objects do not.
 Gossip propagates memories. Affinity/mood/memory consequences.
-Throttle `social.ambient_budget_s` (default 90 s); ambient conversations run one at a time, and
-player chat is never throttled.
+Throttle ambient pairings with `social.ambient_budget_s` (default 20 s), with up to three
+conversations running concurrently; player chat is never throttled.
 
 ## 8. News pipeline
 

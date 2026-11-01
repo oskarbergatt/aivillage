@@ -65,7 +65,7 @@ volume        = 0.85
 rate_scale    = 1.0
 
 [social]
-ambient_budget_s = 90      # quiet period after each ambient conversation (30–1800 seconds)
+ambient_budget_s = 20      # delay between ambient conversations (10–600 seconds); up to 3 overlap
 failure_backoff_s = 120     # initial retry delay after failed ambient generation
 failure_backoff_max_s = 900 # maximum retry delay
 work_chatter     = false   # tiny one-liners during work hours

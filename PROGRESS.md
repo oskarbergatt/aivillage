@@ -54,7 +54,7 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 - [x] Separate optional ambient-dialogue worker, configurable conversation model and low-effort Codex conversations
 - [x] Provider-agnostic prompts; persona-first, strict-JSON replies with text fallback
 - [x] Player chat (T or inspector button) with typing, paste, history, TTS
-- [x] Ambient pair conversations gated to free time, throttle via `social.ambient_budget_s`
+- [x] Ambient exchanges are bounded to 2–4 pair / 3–5 group lines, slowed to 7–12 second turns, throttled by a configurable interval, and capped at three concurrent lanes
 - [x] Affinity/mood/memory consequences of conversations
 - [x] Spoken exchanges are saved as social memories and made available to later pair conversations
 - [x] English/German locale tables with key parity, runtime switch (F2)

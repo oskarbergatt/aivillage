@@ -71,7 +71,7 @@ DEFAULTS: dict[str, Any] = {
         "rate_scale": 1.0,
     },
     "social": {
-        "ambient_budget_s": 90,
+        "ambient_budget_s": 20,
         "failure_backoff_s": 120,
         "failure_backoff_max_s": 900,
         "work_chatter": False,

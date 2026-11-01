@@ -11,8 +11,8 @@ from .app_shared import (
 
 class VillageSocialMixin:
     def _ambient_cooldown(self) -> float:
-        return max(30.0, min(1800.0, float(
-            self.config.get("social.ambient_budget_s", 90) or 90)))
+        return max(10.0, min(600.0, float(
+            self.config.get("social.ambient_budget_s", 20) or 20)))
 
     @staticmethod
     def _ambient_line_gap(text: str) -> float:
@@ -37,8 +37,8 @@ class VillageSocialMixin:
 
     def _maybe_social(self, dt: float) -> None:
         self.social_timer -= dt
-        if (self.social_timer > 0 or self.ambient_pending > 0
-                or self._social_track_count() > 0 or self.chat.active
+        if (self.social_timer > 0
+                or self._social_track_count() + self.ambient_pending >= 3 or self.chat.active
                 or self.show_chronicle):
             return
         if not self.config.get("llm.ambient_dialogue", True) or not self.llm.available:
@@ -125,7 +125,7 @@ class VillageSocialMixin:
             b.talk_timer = (now - time.time() + 3) * self._social_speed()
             a.memory.adjust(b.key, 0.04)
             b.memory.adjust(a.key, 0.04)
-            self.social_timer = self._ambient_cooldown() + max(0.0, now - time.time())
+            self.social_timer = self._ambient_cooldown()
 
         self.llm.submit(
             "exchange",
@@ -186,7 +186,7 @@ class VillageSocialMixin:
                 for other in members:
                     if other is not agent:
                         agent.memory.adjust(other.key, 0.04)
-            self.social_timer = self._ambient_cooldown() + max(0.0, at - time.time())
+            self.social_timer = self._ambient_cooldown()
 
         context = self._prompt_ctx(None)
         if self.config.get("social.threads", True):

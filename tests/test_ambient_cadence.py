@@ -2,14 +2,17 @@
 import time
 
 
-def test_pair_exchange_is_short_slow_and_not_overlapped(app, monkeypatch):
-    a, b = app.agents[:2]
-    app.agents = [a, b]
-    a.x, a.y = 100, 100
-    b.x, b.y = 120, 100
-    a.state = b.state = a.block = b.block = "free"
-    a.path = b.path = []
-    a.talk_timer = b.talk_timer = 0
+def test_pair_exchange_is_slow_and_allows_three_lanes(app, monkeypatch):
+    pairs = [app.agents[i:i + 2] for i in (0, 2, 4)]
+    app.agents = [agent for pair in pairs for agent in pair]
+    for pair_index, pair in enumerate(pairs):
+        for index, agent in enumerate(pair):
+            agent.x, agent.y = 100 + pair_index * 150 + index * 12, 100
+            agent.state = agent.block = "free"
+            agent.path = []
+            agent.bubble = None
+            agent.talk_timer = 0
+    a, b = pairs[0]
     app.social_timer = 0
     jobs = []
     monkeypatch.setattr(app.llm, "submit", lambda *args, **kwargs: jobs.append(args[3]))
@@ -25,9 +28,13 @@ def test_pair_exchange_is_short_slow_and_not_overlapped(app, monkeypatch):
     assert all(gap >= 7 for gap in gaps)
     assert app.social_timer >= app._ambient_cooldown()
 
+    for expected_jobs in (2, 3):
+        app.social_timer = 0
+        app._maybe_social(0)
+        assert len(jobs) == expected_jobs
     app.social_timer = 0
     app._maybe_social(0)
-    assert len(jobs) == 1  # no second request while the first exchange is playing
+    assert len(jobs) == 3  # cap active + pending ambient lanes at three
 
 
 def test_group_exchange_is_bounded_and_uses_long_gaps(app, monkeypatch):
