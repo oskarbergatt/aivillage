@@ -13,7 +13,32 @@ from .config import SAVE_DIR
 
 SAVE_PATH = SAVE_DIR / "village.json"
 SLOTS = 5
-VERSION = 1
+VERSION = 2
+
+
+def _migrate_v1_to_v2(data: dict) -> dict:
+    migrated = dict(data)
+    migrated.setdefault("story_arc", {})
+    migrated.setdefault("diaries", {})
+    migrated["version"] = 2
+    return migrated
+
+
+MIGRATIONS = {1: _migrate_v1_to_v2}
+
+
+def _migrate(data: dict) -> dict | None:
+    version = data.get("version")
+    if type(version) is not int or version < 1 or version > VERSION:
+        return None
+    migrated = dict(data)
+    while version < VERSION:
+        migration = MIGRATIONS.get(version)
+        if migration is None:
+            return None
+        migrated = migration(migrated)
+        version = migrated.get("version")
+    return migrated
 
 
 def slot_path(slot: int = 1) -> Path:
@@ -47,9 +72,9 @@ def load_village(path: Path = SAVE_PATH) -> dict | None:
         return None
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
-        if not isinstance(data, dict) or data.get("version") != VERSION:
+        if not isinstance(data, dict):
             return None
-        return data
+        return _migrate(data)
     except Exception:
         return None
 

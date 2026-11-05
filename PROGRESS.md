@@ -3,7 +3,7 @@
 Living checklist. Update it when a milestone lands or a gap closes.
 Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md)
 
-**Last updated:** 2026-11-01 · **Tests:** 191 passed, 1 skipped (`pytest -q`) · **Version:** 0.4.17
+**Last updated:** 2026-11-05 · **Tests:** 196 passed, 1 skipped (`pytest -q`) · **Version:** 0.4.18
 
 ---
 
@@ -136,6 +136,9 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 - [x] Detect left/right Ctrl and Shift modifier bits independently in the dev-mode toggle.
 - [x] The completed town hall renders as a distinct full building rather than a sparse scaffold.
 - [x] README includes a headless mock-provider preview (F12 also writes captures to `data/`)
+- [x] Versioned save schema migrates v1 villages to v2 while rejecting unsupported future saves
+- [x] Rotating JSON diagnostics record lifecycle and LLM worker failures without storing secrets
+- [x] Shutdown isolates service failures and waits for all LLM worker threads to finish
 
 ---
 
@@ -143,6 +146,7 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 
 | Date | Check | Result |
 |---|---|---|
+| 2026-11-05 | `pytest -q` (v0.4.18) | **196 passed, 1 skipped**, 6 existing pygame deprecation warnings |
 | 2026-11-01 | v0.4.17 release CI | Test matrix passed; Windows, macOS and Linux builds and release publication passed |
 | 2026-11-01 | `pytest -q` (v0.4.17) | **191 passed, 1 skipped** |
 | 2026-11-01 | v0.4.16 release CI | Test matrix passed; Windows, macOS and Linux builds and release publication passed |

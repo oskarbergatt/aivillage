@@ -1,6 +1,9 @@
 """Extracted methods for LLMClient."""
 from __future__ import annotations
 
+import logging
+import time
+
 from .client_shared import (
     Callable,
     Job,
@@ -12,6 +15,8 @@ from .client_shared import (
     shutil,
     threading,
 )
+
+logger = logging.getLogger("aivillage.llm.worker")
 
 
 class ClientWorkerMixin:
@@ -143,11 +148,16 @@ class ClientWorkerMixin:
                 worker.start()
             self._ambient_worker = self._ambient_workers[0]
 
-    def stop(self) -> None:
+    def stop(self, timeout: float = 2.0) -> None:
         self._stop.set()
         self._jobs.put(Job("__stop__", "", ""))
         for _ in self._ambient_workers:
             self._ambient_jobs.put(Job("__stop__", "", ""))
+        deadline = time.monotonic() + max(0.0, timeout)
+        for worker in (self._worker, *self._ambient_workers):
+            if worker is None or worker is threading.current_thread():
+                continue
+            worker.join(max(0.0, deadline - time.monotonic()))
 
     def submit(self, kind: str, system: str, user: str,
                callback: Callable[[dict | None, str], None] | None = None,
@@ -176,7 +186,10 @@ class ClientWorkerMixin:
                 try:
                     job.callback(result, error)
                 except Exception:
-                    pass
+                    logger.exception("LLM callback failed",
+                                     extra={"event": "llm_callback_failed",
+                                            "job_kind": job.kind,
+                                            "provider": self.provider})
 
     def _cache_key(self, job: Job) -> str:
         # Include all output-affecting settings and delimit fields unambiguously.
@@ -202,6 +215,10 @@ class ClientWorkerMixin:
             except Exception as exc:
                 with self._cache_lock:
                     self.stats.errors += 1
+                logger.exception("LLM job failed",
+                                 extra={"event": "llm_job_failed",
+                                        "job_kind": job.kind,
+                                        "provider": self.provider})
                 self._results.put((job, None, str(exc)[:200]))
 
     def _execute(self, job: Job) -> dict | None:

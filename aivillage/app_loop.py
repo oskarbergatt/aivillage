@@ -1,12 +1,16 @@
 """Extracted methods for VillageApp."""
 from __future__ import annotations
 
+import logging
+
 from .app_shared import (
     math,
     pygame,
     time,
     traceback,
 )
+
+logger = logging.getLogger("aivillage.lifecycle")
 
 
 class VillageLoopMixin:
@@ -113,27 +117,21 @@ class VillageLoopMixin:
         self.shutdown()
 
     def shutdown(self) -> None:
-        try:
-            self.autosave()
-        except Exception:
-            pass
-        try:
-            self.news.stop()
-        except Exception:
-            pass
-        self.alerts.stop()
-        try:
-            self.weather_service.stop()
-        except Exception:
-            pass
-        try:
-            self._close_social_tracks()
-            self.voice.shutdown()
-        except Exception:
-            pass
-        try:
-            self.llm.stop()
-        except Exception:
-            pass
-        pygame.quit()
+        actions = (
+            ("autosave", self.autosave),
+            ("news", self.news.stop),
+            ("alerts", self.alerts.stop),
+            ("weather", self.weather_service.stop),
+            ("social_tracks", self._close_social_tracks),
+            ("voice", self.voice.shutdown),
+            ("llm", self.llm.stop),
+            ("pygame", pygame.quit),
+        )
+        for service, action in actions:
+            try:
+                action()
+            except Exception:
+                logger.exception("service shutdown failed",
+                                 extra={"event": "service_stop_failed",
+                                        "service": service})
 

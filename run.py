@@ -44,8 +44,11 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
 
-    from aivillage.config import Config, CONFIG_PATH
+    from aivillage.config import Config, CONFIG_PATH, DATA_DIR
+    from aivillage.diagnostics import configure_logging
     from aivillage.app import VillageApp
+
+    configure_logging(DATA_DIR / "logs")
 
     path = CONFIG_PATH
     if args.config:
