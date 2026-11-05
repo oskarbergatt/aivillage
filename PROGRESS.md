@@ -3,7 +3,7 @@
 Living checklist. Update it when a milestone lands or a gap closes.
 Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md)
 
-**Last updated:** 2026-11-05 · **Tests:** 196 passed, 1 skipped (`pytest -q`) · **Version:** 0.4.18
+**Last updated:** 2026-11-05 · **Tests:** 196 passed, 1 skipped (`pytest -q`) · **Version:** 0.4.19
 
 ---
 
@@ -146,6 +146,7 @@ Plan: [`PLAN.md`](PLAN.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md
 
 | Date | Check | Result |
 |---|---|---|
+| 2026-11-05 | `pytest -q` (v0.4.19) | **196 passed, 1 skipped**, 6 existing pygame deprecation warnings |
 | 2026-11-05 | `pytest -q` (v0.4.18) | **196 passed, 1 skipped**, 6 existing pygame deprecation warnings |
 | 2026-11-01 | v0.4.17 release CI | Test matrix passed; Windows, macOS and Linux builds and release publication passed |
 | 2026-11-01 | `pytest -q` (v0.4.17) | **191 passed, 1 skipped** |

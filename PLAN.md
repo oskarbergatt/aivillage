@@ -1,6 +1,6 @@
 # aivillage — Master Build Plan
 
-> **Status: IMPLEMENTED (v0.4 — resource trades)** · Last updated: 2026-10-31
+> **Status: IMPLEMENTED (v0.4 — resource trades)** · Last updated: 2026-11-05
 > This repository copy is the authoritative project plan.
 > Deviations from the original plan are logged in [`docs/DECISIONS.md`](docs/DECISIONS.md)
 > and tracked in [`PROGRESS.md`](PROGRESS.md).
@@ -39,18 +39,28 @@ headlines, and, with a real model, decide for themselves who they want to become
 | Offline SAPI5 voice (pyttsx3), per-villager voice profiles, mute | ✅ done | `aivillage/voice/tts.py` |
 | Procedural SFX + weather VFX (rain/snow/fog/storm, wind) | ✅ done | `assets/sfx.py`, `render/renderer.py` |
 | Save/load + autosave | ✅ done | `aivillage/save.py`, `app.py` |
-| Tests (81 passing) | ✅ done | `tests/` |
+| Purse economy, meal plans, Saturday market | ✅ done | `aivillage/economy.py`, `app.py` |
+| Tests (196 passing) | ✅ done | `tests/` |
 | News status/health panel, automatic feed backoff/mute | ✅ done | `news/pipeline.py`, HUD |
-| DWD/Bright Sky alert service | ◐ partial | module exists; courier bulletins not wired |
-| In-game settings screen | ✗ deferred | settings via config/CLI |
-| Save slots 1–5 | ◐ partial | `save.py` ready; HUD still uses slot 1 |
-| Multi-turn ambient exchanges (single exchange per pairing) | ◐ partial | `prompts.exchange_*` |
-| Group chats at plaza lunch | ◐ partial | prompt helper only; assembly + pair chats |
-| Persistent conversation threads across days | ◐ partial | memory helpers exist; not used by scheduler |
-| Cost meter in HUD | ◐ partial | `LLMClient.cost_text()` exists, not drawn |
-| Setup card with "test connection" | ◐ partial | setup card explains missing model; retry button |
+| DWD/Bright Sky alert service | ✅ done | courier bulletins wired; alerts wait for visitor slot |
+| In-game settings screen | ✅ done | F3 modal for dialogue options and save slots |
+| Save slots 1–5 | ✅ done | five slots via F3; autosave follows last saved/loaded slot |
+| Multi-turn ambient exchanges | ✅ done | 2-4 pair / 3-5 group lines, three concurrent lanes |
+| Group chats at plaza lunch | ✅ done | ambient group conversations use the scheduler |
+| Persistent conversation threads across days | ✅ done | bounded threads saved across sessions, used by pair and group prompts |
+| Cost meter in HUD | ✅ done | on-screen estimated token and call count |
+| Setup card with "test connection" | ✅ done | setup card with retry button and provider chooser |
 | Weather forecast-aware planning, wardrobe | ◐ partial | forecast-aware work; no wardrobe |
-| Screenshots in README | ✗ not captured | F12 saves to `data/` |
+| Screenshots in README | ✅ done | headless mock-provider preview in `docs/village-preview.png` |
+| Native desktop builds (Windows/macOS/Linux) | ✅ done | `build_app.py`, CI workflow |
+| Native installers (Inno/dmg/dpkg) | ✅ done | `build_installer.py` |
+| In-app update checker with SHA-256 verification | ✅ done | release download and installer launch |
+| Photo mode, postcard export, clean screenshot | ✅ done | F10/F11/F12 |
+| Cutaway house interiors | ✅ done | click-to-enter, Esc to return |
+| F1 help window | ✅ done | controls, changes, working hours |
+| Developer mode (Ctrl+Shift+F9) | ✅ done | unlimited resources, need refill, instant town hall |
+| Versioned save schema with migration | ✅ done | v1→v2 migration, future-save rejection |
+| Rotating JSON diagnostics | ✅ done | lifecycle and LLM worker failure logging |
 
 Legend: ✅ implemented · ◐ partial/limited · ✗ not implemented.
 
@@ -102,15 +112,15 @@ Rejected: AP News 403, Ostsee-Zeitung 403, NDR MV no RSS, SVZ no RSS, Wikipedia 
 
 Clock: live default; speed buttons detach into Fast-Forward with badge + "Return to Live";
 re-sync on sleep/resume; real sunrise/sunset drives lighting; Sunday rest for day folk; real
-holidays and Saturday/Monday routines are **not** implemented yet; night = sleeping village +
+holidays and Saturday/Monday routines implemented; night = sleeping village +
 night folk (Wisp, Nim) + "Sleep until dawn" (N).
 
 Weather: poll 15 min, cache, fallback last_known/seasonal_sim. WMO map:
 0 clear | 1–2 partly cloudy | 3 overcast | 45/48 fog | 51–57 drizzle | 61–67 rain |
 71–77 + 85–86 snow | 80–82 showers | 95–99 thunderstorm.
 Effects: rain, snow, fog, lightning, wind-driven particles, night lighting and warm window pools.
-Forecast-aware planning; temperature wardrobe (<8 °C coats, >25 °C shade); weather text in prompts;
-DWD alerts as courier bulletins — **not implemented yet**.
+Forecast-aware planning; temperature wardrobe (<8 °C coats, >25 °C shade) — **not implemented**;
+weather text in prompts; DWD alerts as courier bulletins implemented.
 
 ## 4. World
 
@@ -162,20 +172,26 @@ dinner → wind-down → sleep.
 
 ## 6. Simulation
 
-20 Hz logic / 60 fps render (logic clamped per frame, render independent).
-Utility-ish scoring from needs × personality × time × weather.
-Economy: wood/stone/food/coin. Farm seed→sprout→ripe→harvest. Affinity drift, grudges, gossip.
+Frame-scaled simulation with clamped dt, multiplied by time speed (0 when paused, 1 in live mode).
+Schedule block → survival overrides → intent (not a full utility scorer).
+Economy: wood/stone/food/coin. Every villager has a purse (share of earned coin).
+Meals: cook at home, buy tavern stew, market food, or scrounge — chosen from hunger, purse, pantry,
+and traits. Cooking consumes village food; eating restores hunger gradually.
+Farm seed→sprout→ripe→harvest. Saturday market (09:00–14:00). Affinity drift, grudges, gossip.
 Events: weather, visitors, construction milestones. Additive light overlay. Weather VFX + particles.
 
 ## 7. Conversations
 
 Pair available villagers (tier 3/4) near each other. One LLM call → one exchange
-(multi-turn arrays supported by the prompt/response shape).
+(multi-turn arrays supported by the prompt/response shape). Up to 2-4 pair lines or 3-5 group
+lines, spaced 7-12 seconds apart.
 Sequential bubbles with speaker colour/portrait; face each other.
-Persistent threads across days: memories persist, thread objects do not.
+Persistent threads across days: bounded per-villager threads saved across sessions, used by pair
+and group prompts. LLM-authored multi-day story continuity.
 Gossip propagates memories. Affinity/mood/memory consequences.
 Throttle ambient pairings with `social.ambient_budget_s` (default 20 s), with up to three
 conversations running concurrently; player chat is never throttled.
+Ambient voices enabled by default; next answer prepared during final second of current line.
 
 ## 8. News pipeline
 
@@ -183,8 +199,8 @@ Poll ~40 min via feedparser (UA, timeout) → dedupe hash → SQLite `news.db` (
 distress filter → weighted category pick (world 40, oddities 15, science 15, tech 10, sport 10,
 local 10; never same source twice in a row; language matched) → LLM adapts ONCE per item+language
 → dispatch {headline, tone, topic}. Originals kept in Chronicle with source URL.
-Feed health counters are exposed via `NewsService.status()`; automatic mute-after-5-failures is
-not implemented. Offline: rumours/omens instead.
+Feed health counters are exposed via `NewsService.status()`; automatic mute after failures
+is implemented. Offline: rumours/omens instead.
 
 ## 9. Travellers
 
@@ -216,7 +232,7 @@ child), hat and outfit; `Agent.apply_self()` validates and persists it.
 ## 12. Voice
 
 pyttsx3 on its own thread + speak queue. Per-agent SAPI voice + rate + volume. Speaks player chat
-and notable events; ambient silent by default; global mute always works. No pitch control in SAPI5.
+and notable events; ambient voices enabled by default; global mute always works. No pitch control in SAPI5.
 
 ## 13. UI
 
@@ -225,10 +241,11 @@ Inspector: portrait, job/age/dream, ambition, traits, needs, mood, relationships
 thought, separate TALK and SELF buttons.
 Callings panel (`J`): all trades, who holds each, yields.
 Chronicle: dispatches with real source links, daily diary, events.
-Settings: language and save work in HUD; location/provider are config/CLI options (**no modal
-settings screen**).
+Settings: F3 modal for dialogue options, save slots, and provider chooser; other settings remain
+in config/CLI.
 Keys: Space pause, 1–4 speed, L return to live, N sleep until dawn, M mute, S save, T chat, R self,
-J jobs, C chronicle, V visitor, F2 language, F12 screenshot, WASD/drag pan, wheel zoom, Esc close.
+J jobs, C chronicle, V visitor, F1 help, F2 language, F3 settings, F10 photo mode, F11 postcard,
+F12 screenshot, WASD/drag pan, wheel zoom, Esc close.
 
 ## 14. Layout
 
@@ -274,22 +291,21 @@ weather VFX, holidays, particles, tests, README with screenshots.
 Launch for real; day + night screenshots reviewed; click villager and verify inspector/task;
 real chat round-trip; confirm UI never blocks on network; pytest green.
 
-**Current verification:** pytest 163 passed, 1 skipped; headless launches with `--provider mock` produce a
-rendered frame; day/night renders verified by luminance assertion in `tests/test_app.py`. The
-subscription CLIs are installed and unit-tested, but `claude -p` returned an account card-verification
-error in the build environment and Codex was not exercised with a real prompt. A real desktop launch
-and visual review are still outstanding.
+**Current verification:** pytest 196 passed, 1 skipped (v0.4.19); headless launches with `--provider mock` produce a
+rendered frame; day/night renders verified by luminance assertion. The
+subscription CLIs are installed and unit-tested. Native builds for Windows, macOS and Linux pass CI.
+A real desktop launch and visual review are still outstanding.
 
 ## 17. Risks & known gaps
 
 - 3.14 wheel gaps → uv 3.12. pyttsx3 flaky enumeration → try/except + mute + override.
-- LLM-only means no dialogue without config → setup card. Cost/latency → cache + throttle (no
-  on-screen cost meter yet).
+- LLM-only means no dialogue without config → setup card. Cost/latency → cache + throttle;
+  on-screen cost meter shows estimated token and call count.
 - Night launches → sleeping village + sleep button. Long sessions → clamp catch-up.
-- Font umlauts → verify/fallback. Feed rot → health counters (auto-mute missing).
-- Not implemented yet: courier wiring for DWD alerts, in-game settings modal, cost meter, save-slot
-  picker in the HUD, group lunch chats in the live scheduler, persistent threads in the live
-  scheduler, wardrobe, README screenshots.
+- Font umlauts → verify/fallback. Feed rot → health counters with automatic mute after failures.
+- Not implemented yet: temperature-based wardrobe.
+- Verified but not automated: native installer installation on each OS, tagged-release updater
+  end-to-end flow, live chat with a real provider.
 
 ## 18–21. Stretch and milestone plans
 
